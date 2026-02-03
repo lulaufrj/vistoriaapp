@@ -211,10 +211,18 @@ const Report = {
             font-family: Arial, sans-serif;
             line-height: 1.6;
             color: #333;
-            max-width: 210mm;
+            width: 100%;
+            max-width: 100%;
             margin: 0 auto;
-            padding: 20mm;
+            padding: 20px;
             background: white;
+            box-sizing: border-box;
+          }
+          @media print {
+            body {
+               max-width: 210mm;
+               padding: 20mm;
+            }
           }
           .header {
             text-align: center;
