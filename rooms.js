@@ -157,19 +157,21 @@ const Rooms = {
     /**
      * Close room modal
      */
-    closeModal() {
-        // Check for unsaved changes
-        const hasUnsavedChanges =
-            document.getElementById('roomName').value ||
-            document.getElementById('roomDescription').value ||
-            Camera.getPhotos().length > 0 ||
-            AudioRecorder.getAudios().length > 0;
+    closeModal(bypassValidation = false) {
+        // Check for unsaved changes unless bypassing validation (e.g. after saving)
+        if (!bypassValidation) {
+            const hasUnsavedChanges =
+                document.getElementById('roomName').value ||
+                document.getElementById('roomDescription').value ||
+                Camera.getPhotos().length > 0 ||
+                AudioRecorder.getAudios().length > 0;
 
-        if (hasUnsavedChanges) {
-            // Create a custom confirmation dialog or use browser confirm
-            if (confirm('Existem dados não salvos neste cômodo. Deseja salvar antes de sair?')) {
-                this.saveRoom();
-                return;
+            if (hasUnsavedChanges) {
+                // If user says OK (Save), we save. If Cancel (Don't Save), we close and discard.
+                if (confirm('Existem dados não salvos neste cômodo. Deseja salvar antes de sair?')) {
+                    this.saveRoom();
+                    return;
+                }
             }
         }
 
@@ -207,7 +209,8 @@ const Rooms = {
             this.addRoom(roomData);
         }
 
-        this.closeModal();
+        // Close modal and bypass validation (since we just saved)
+        this.closeModal(true);
     },
 
     /**
