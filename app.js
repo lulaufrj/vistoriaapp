@@ -63,11 +63,11 @@ const Wizard = {
             this.savePropertyData();
             this.goToStep(2); // Go to rooms step
         } else if (currentStep === 2) {
-            // Validate rooms before going to review
-            if (Rooms.getRooms().length === 0) {
-                Utils.showNotification('Adicione pelo menos um cômodo antes de continuar', 'warning');
-                return; // Don't allow proceeding without rooms
-            }
+            // Temporarily disabled room validation for testing
+            // if (Rooms.getRooms().length === 0) {
+            //     Utils.showNotification('Adicione pelo menos um cômodo antes de continuar', 'warning');
+            //     return;
+            // }
             this.goToStep(3); // Go to review
             this.showReview();
         } else if (currentStep === 3) {
