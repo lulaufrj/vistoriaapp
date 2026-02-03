@@ -91,15 +91,41 @@ const Camera = {
      */
     async addPhoto(file) {
         try {
+            // Show loading notification
+            Utils.showNotification('Fazendo upload da foto...', 'info');
+
             // Compress image
             const compressed = await Utils.compressImage(file);
 
-            // Convert to base64 for storage
+            // Convert to base64 for upload
             const base64 = await Utils.fileToBase64(compressed);
+
+            // Upload to Cloudinary
+            const API_URL = window.location.hostname === 'localhost'
+                ? 'http://localhost:3001'
+                : window.location.origin;
+
+            const token = localStorage.getItem('vistoriaapp_token');
+
+            const response = await fetch(`${API_URL}/api/upload/photo`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ photo: base64 })
+            });
+
+            const result = await response.json();
+
+            if (!result.success) {
+                throw new Error(result.error || 'Erro no upload');
+            }
 
             const photo = {
                 id: Utils.generateId(),
-                data: base64,
+                url: result.url, // Cloudinary URL instead of Base64
+                publicId: result.publicId, // For deletion
                 filename: file.name,
                 timestamp: new Date().toISOString()
             };
@@ -111,7 +137,7 @@ const Camera = {
             return photo;
         } catch (error) {
             console.error('Error adding photo:', error);
-            Utils.showNotification('Erro ao adicionar foto', 'error');
+            Utils.showNotification('Erro ao adicionar foto: ' + error.message, 'error');
             return null;
         }
     },
@@ -138,7 +164,7 @@ const Camera = {
 
         gallery.innerHTML = this.currentPhotos.map(photo => `
       <div class="photo-item">
-        <img src="${photo.data}" alt="${photo.filename}">
+        <img src="${photo.url || photo.data}" alt="${photo.filename}">
         <button class="photo-item-remove" onclick="Camera.removePhoto('${photo.id}')">
           ✕
         </button>

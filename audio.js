@@ -229,11 +229,37 @@ const AudioRecorder = {
      */
     async saveAudio(file, transcription) {
         try {
+            // Show loading notification
+            Utils.showNotification('Fazendo upload do áudio...', 'info');
+
             const base64 = await Utils.fileToBase64(file);
+
+            // Upload to Cloudinary
+            const API_URL = window.location.hostname === 'localhost'
+                ? 'http://localhost:3001'
+                : window.location.origin;
+
+            const token = localStorage.getItem('vistoriaapp_token');
+
+            const response = await fetch(`${API_URL}/api/upload/audio`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ audio: base64 })
+            });
+
+            const result = await response.json();
+
+            if (!result.success) {
+                throw new Error(result.error || 'Erro no upload');
+            }
 
             const audio = {
                 id: Utils.generateId(),
-                data: base64,
+                url: result.url, // Cloudinary URL instead of Base64
+                publicId: result.publicId, // For deletion
                 filename: file.name,
                 transcription: transcription.trim(),
                 timestamp: new Date().toISOString()
@@ -245,7 +271,7 @@ const AudioRecorder = {
             return audio;
         } catch (error) {
             console.error('Error saving audio:', error);
-            Utils.showNotification('Erro ao salvar áudio', 'error');
+            Utils.showNotification('Erro ao salvar áudio: ' + error.message, 'error');
             return null;
         }
     },

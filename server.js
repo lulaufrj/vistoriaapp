@@ -22,6 +22,7 @@ app.use(express.static(path.join(__dirname)));
 const mongoose = require('mongoose');
 const User = require('./models/User');
 const Inspection = require('./models/Inspection');
+const { uploadImage, uploadAudio, deleteFile } = require('./cloudinary-config');
 
 // Connect to MongoDB
 const MONGODB_URI = process.env.MONGODB_URI;
@@ -319,6 +320,99 @@ app.post('/api/inspections/migrate', async (req, res) => {
     } catch (error) {
         console.error('Migration error:', error);
         res.status(500).json({ success: false, error: 'Erro na migração' });
+    }
+});
+
+// ============================================
+// Cloudinary Upload Routes
+// ============================================
+
+// Upload photo to Cloudinary
+app.post('/api/upload/photo', async (req, res) => {
+    try {
+        const userId = getUserIdFromToken(req);
+        if (!userId) {
+            return res.status(401).json({ success: false, error: 'Não autorizado' });
+        }
+
+        const { photo } = req.body;
+
+        if (!photo) {
+            return res.status(400).json({ success: false, error: 'Foto não fornecida' });
+        }
+
+        const result = await uploadImage(photo, `inspections/${userId}`);
+
+        if (result.success) {
+            res.json({
+                success: true,
+                url: result.url,
+                publicId: result.publicId
+            });
+            console.log(`📸 Photo uploaded: ${result.publicId}`);
+        } else {
+            res.status(500).json({ success: false, error: result.error });
+        }
+    } catch (error) {
+        console.error('Photo upload error:', error);
+        res.status(500).json({ success: false, error: 'Erro ao fazer upload da foto' });
+    }
+});
+
+// Upload audio to Cloudinary
+app.post('/api/upload/audio', async (req, res) => {
+    try {
+        const userId = getUserIdFromToken(req);
+        if (!userId) {
+            return res.status(401).json({ success: false, error: 'Não autorizado' });
+        }
+
+        const { audio } = req.body;
+
+        if (!audio) {
+            return res.status(400).json({ success: false, error: 'Áudio não fornecido' });
+        }
+
+        const result = await uploadAudio(audio, `inspections/${userId}/audio`);
+
+        if (result.success) {
+            res.json({
+                success: true,
+                url: result.url,
+                publicId: result.publicId
+            });
+            console.log(`🎤 Audio uploaded: ${result.publicId}`);
+        } else {
+            res.status(500).json({ success: false, error: result.error });
+        }
+    } catch (error) {
+        console.error('Audio upload error:', error);
+        res.status(500).json({ success: false, error: 'Erro ao fazer upload do áudio' });
+    }
+});
+
+// Delete file from Cloudinary
+app.delete('/api/upload/:publicId', async (req, res) => {
+    try {
+        const userId = getUserIdFromToken(req);
+        if (!userId) {
+            return res.status(401).json({ success: false, error: 'Não autorizado' });
+        }
+
+        const { publicId } = req.params;
+        const { resourceType } = req.query; // 'image' or 'video'
+
+        const result = await deleteFile(publicId, resourceType || 'image');
+
+        if (result.success) {
+            res.json({ success: true, message: 'Arquivo deletado com sucesso' });
+            console.log(`🗑️ File deleted: ${publicId}`);
+        } else {
+            res.status(500).json({ success: false, error: result.error });
+        }
+    } catch (error) {
+        console.error('Delete file error:', error);
+        res.status(500).json({ success: false, error: 'Erro ao deletar arquivo' });
     }
 });
 
