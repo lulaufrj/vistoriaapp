@@ -158,6 +158,21 @@ const Rooms = {
      * Close room modal
      */
     closeModal() {
+        // Check for unsaved changes
+        const hasUnsavedChanges =
+            document.getElementById('roomName').value ||
+            document.getElementById('roomDescription').value ||
+            Camera.getPhotos().length > 0 ||
+            AudioRecorder.getAudios().length > 0;
+
+        if (hasUnsavedChanges) {
+            // Create a custom confirmation dialog or use browser confirm
+            if (confirm('Existem dados não salvos neste cômodo. Deseja salvar antes de sair?')) {
+                this.saveRoom();
+                return;
+            }
+        }
+
         document.getElementById('roomModal').classList.add('hidden');
         this.currentEditingRoomId = null;
     },
