@@ -1,0 +1,280 @@
+// ============================================
+// AI Formatter Module - Professional Report Text
+// ============================================
+
+const AIFormatter = {
+    // Backend API configuration
+    BACKEND_URL: 'http://localhost:3001',
+
+    /**
+     * Format informal text to professional inspection report language
+     */
+    async formatToProfessionalReport(informalText, roomType, roomName) {
+        try {
+            const response = await fetch(`${this.BACKEND_URL}/api/format-text`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    text: informalText,
+                    roomType: roomType,
+                    roomName: roomName
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`Backend error: ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            // Show notification about which method was used
+            if (data.method === 'ai') {
+                console.log('✅ Formatted with AI (Gemini)');
+            } else if (data.method === 'rule-based') {
+                console.log('ℹ️ Formatted with rules (no API key configured)');
+            } else if (data.method === 'rule-based-fallback') {
+                console.log('⚠️ AI failed, using rule-based fallback');
+            }
+
+            return data.formatted;
+        } catch (error) {
+            console.error('Error calling backend:', error);
+
+            // Ultimate fallback: client-side rule-based formatting
+            console.log('⚠️ Backend unavailable, using client-side fallback');
+            return this.clientSideFallback(informalText, roomType, roomName);
+        },
+
+    /**
+     * Format audio transcription specifically for inspection reports
+     * Optimized for standalone transcriptions without room context
+     */
+    async formatAudioTranscription(rawTranscription) {
+            try {
+                const response = await fetch(`${this.BACKEND_URL}/api/format-audio`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        transcription: rawTranscription
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Backend error: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                // Show notification about which method was used
+                if (data.method === 'ai') {
+                    console.log('✅ Audio formatted with AI (Gemini)');
+                } else {
+                    console.log('ℹ️ Audio formatted with rules (fallback)');
+                }
+
+                return data.formatted;
+            } catch (error) {
+                console.error('Error formatting audio:', error);
+
+                // Fallback: basic formatting
+                console.log('⚠️ Using basic audio formatting fallback');
+                return this.basicAudioFormatting(rawTranscription);
+            }
+        },
+
+        /**
+         * Basic audio formatting fallback
+         */
+        basicAudioFormatting(text) {
+            let formatted = text.trim();
+
+            // Capitalize first letter
+            if (formatted.length > 0) {
+                formatted = formatted.charAt(0).toUpperCase() + formatted.slice(1);
+            }
+
+            // Add period if missing
+            if (!formatted.endsWith('.') && !formatted.endsWith('!') && !formatted.endsWith('?')) {
+                formatted += '.';
+            }
+
+            // Replace common informal terms
+            const replacements = {
+                ' tem ': ' possui ',
+                ' tá ': ' está ',
+                ' ta ': ' está ',
+                ' pra ': ' para ',
+                ' né ': ' ',
+                ' daí ': ' então ',
+            };
+
+            Object.entries(replacements).forEach(([informal, formal]) => {
+                const regex = new RegExp(informal, 'gi');
+                formatted = formatted.replace(regex, formal);
+            });
+
+            return formatted;
+        },
+
+    /**
+     * Format informal text to professional inspection report language
+     */
+    async formatToProfessionalReport(informalText, roomType, roomName) {
+            try {
+                const response = await fetch(`${this.BACKEND_URL}/api/format-text`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        text: informalText,
+                        roomType: roomType,
+                        roomName: roomName
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Backend error: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                // Show notification about which method was used
+                if (data.method === 'ai') {
+                    console.log('✅ Formatted with AI (Gemini)');
+                } else if (data.method === 'rule-based') {
+                    console.log('ℹ️ Formatted with rules (no API key configured)');
+                } else if (data.method === 'rule-based-fallback') {
+                    console.log('⚠️ AI failed, using rule-based fallback');
+                }
+
+                return data.formatted;
+            } catch (error) {
+                console.error('Error calling backend:', error);
+
+                // Ultimate fallback: client-side rule-based formatting
+                console.log('⚠️ Backend unavailable, using client-side fallback');
+                return this.clientSideFallback(informalText, roomType, roomName);
+            }
+        },
+
+        /**
+         * Client-side fallback formatting (when backend is unavailable)
+         */
+        clientSideFallback(text, roomType, roomName) {
+            const roomLabel = roomName || this.getRoomTypeLabel(roomType);
+
+            let formatted = text.trim();
+
+            // Replace informal terms with formal ones
+            const replacements = {
+                'tá': 'está',
+                'ta': 'está',
+                'tem': 'há',
+                'tem um': 'observa-se',
+                'tem uma': 'observa-se',
+                'quebrado': 'avariado',
+                'quebradinho': 'com pequeno dano',
+                'funcionando': 'em funcionamento',
+                'funcionando direitinho': 'em pleno funcionamento',
+                'não sei': 'não confirmado',
+                'acho que': 'aparentemente',
+                'eu acho': 'aparentemente',
+                'pode fazer': '',
+                'por favor': '',
+                'pra mim': '',
+                'laudo imobiliário': '',
+                'vistoria': ''
+            };
+
+            Object.entries(replacements).forEach(([informal, formal]) => {
+                const regex = new RegExp(informal, 'gi');
+                formatted = formatted.replace(regex, formal);
+            });
+
+            // Add formal introduction
+            let result = `No ambiente vistoriado (${roomLabel}), `;
+
+            formatted = formatted
+                .replace(/\s+/g, ' ')
+                .replace(/,\s*,/g, ',')
+                .replace(/\.\s*\./g, '.')
+                .trim();
+
+            if (formatted.length > 0) {
+                formatted = formatted.charAt(0).toLowerCase() + formatted.slice(1);
+            }
+
+            result += formatted;
+
+            if (!result.endsWith('.')) {
+                result += '.';
+            }
+
+            result += '\n\nDe modo geral, o ambiente encontra-se em condições adequadas de uso, ressalvadas as observações mencionadas.';
+
+            return result;
+        },
+
+        /**
+         * Get room type label
+         */
+        getRoomTypeLabel(type) {
+            const labels = {
+                'quarto': 'Quarto',
+                'suite': 'Suíte',
+                'sala': 'Sala',
+                'cozinha': 'Cozinha',
+                'banheiro': 'Banheiro',
+                'lavabo': 'Lavabo',
+                'varanda': 'Varanda',
+                'garagem': 'Garagem',
+                'area-servico': 'Área de Serviço',
+                'escritorio': 'Escritório',
+                'despensa': 'Despensa',
+                'outro': 'Ambiente'
+            };
+
+            return labels[type] || 'Ambiente';
+        },
+
+    /**
+     * Check backend health
+     */
+    async checkBackendHealth() {
+            try {
+                const response = await fetch(`${this.BACKEND_URL}/api/health`);
+                if (response.ok) {
+                    const data = await response.json();
+                    return data;
+                }
+                return null;
+            } catch (error) {
+                return null;
+            }
+        },
+
+    /**
+     * Format multiple transcriptions
+     */
+    async formatMultipleTranscriptions(transcriptions, roomType, roomName) {
+            const formatted = [];
+
+            for (const transcription of transcriptions) {
+                if (transcription && transcription.trim()) {
+                    const formattedText = await this.formatToProfessionalReport(
+                        transcription,
+                        roomType,
+                        roomName
+                    );
+                    formatted.push(formattedText);
+                }
+            }
+
+            return formatted.join('\n\n');
+        }
+    };

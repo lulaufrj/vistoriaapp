@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Sistema profissional para vistorias imobiliárias">
+  <title>VistoriaApp - Sistema de Vistoria Imobiliária</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+  <!-- Auth Container -->
+  <div id="authContainer" class="hidden">
+    <div class="auth-wrapper">
+      <div class="auth-card">
+        <div class="auth-header">
+          <div class="logo justify-center">
+            <span>🏢 VistoriaApp</span>
+          </div>
+          <p class="text-center text-gray-500 mt-2">Sistema Profissional de Laudos</p>
+        </div>
+
+        <!-- Login Section -->
+        <div id="loginSection">
+          <h2 class="text-center mb-6">Login</h2>
+          <form id="loginForm">
+            <div class="form-group">
+              <label class="form-label">Email</label>
+              <input type="email" class="form-input" id="loginEmail" required placeholder="seu@email.com">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Senha</label>
+              <input type="password" class="form-input" id="loginPassword" required placeholder="••••••••">
+              <div class="text-right mt-1">
+                <a href="#" id="toForgotBtn" class="text-sm text-primary-600 hover:text-primary-700">Esqueci minha
+                  senha</a>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary w-full" id="loginBtn">Entrar</button>
+          </form>
+          <div class="auth-footer text-center mt-4">
+            <p>Não tem conta? <a href="#" id="toRegisterBtn" class="text-primary-600 font-bold">Cadastre-se</a></p>
+          </div>
+        </div>
+
+        <!-- Register Section -->
+        <div id="registerSection" class="hidden">
+          <h2 class="text-center mb-6">Criar Conta</h2>
+          <form id="registerForm">
+            <div class="form-group">
+              <label class="form-label">Nome Completo</label>
+              <input type="text" class="form-input" id="registerName" required placeholder="Seu Nome">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email</label>
+              <input type="email" class="form-input" id="registerEmail" required placeholder="seu@email.com">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Senha</label>
+              <input type="password" class="form-input" id="registerPassword" required placeholder="••••••••">
+            </div>
+            <button type="submit" class="btn btn-primary w-full" id="registerBtn">Criar Conta</button>
+          </form>
+          <div class="auth-footer text-center mt-4">
+            <p>Já tem conta? <a href="#" id="toLoginFromRegisterBtn" class="text-primary-600 font-bold">Faça Login</a>
+            </p>
+          </div>
+        </div>
+
+        <!-- Forgot Password Section -->
+        <div id="forgotPasswordSection" class="hidden">
+          <h2 class="text-center mb-6">Recuperar Senha</h2>
+          <p class="text-center text-gray-500 mb-4 text-sm">Digite seu email para receber um código de recuperação.</p>
+          <form id="forgotPasswordForm">
+            <div class="form-group">
+              <label class="form-label">Email</label>
+              <input type="email" class="form-input" id="forgotEmail" required placeholder="seu@email.com">
+            </div>
+            <button type="submit" class="btn btn-primary w-full" id="forgotBtn">Enviar Código</button>
+          </form>
+          <div class="auth-footer text-center mt-4">
+            <p><a href="#" id="backToLoginFromForgotBtn" class="text-primary-600 font-bold">Voltar para Login</a></p>
+          </div>
+        </div>
+
+        <!-- Reset Password Section -->
+        <div id="resetPasswordSection" class="hidden">
+          <h2 class="text-center mb-6">Criar Nova Senha</h2>
+          <div class="bg-blue-50 text-blue-700 p-3 rounded mb-4 text-sm">
+            📧 Verifique o Console do Servidor para pegar o código!
+          </div>
+          <form id="resetPasswordForm">
+            <div class="form-group">
+              <label class="form-label">Código de Recuperação</label>
+              <input type="text" class="form-input" id="resetToken" required placeholder="Cole o código aqui">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Nova Senha</label>
+              <input type="password" class="form-input" id="newPassword" required placeholder="••••••••">
+            </div>
+            <button type="submit" class="btn btn-primary w-full" id="resetBtn">Salvar Nova Senha</button>
+          </form>
+          <div class="auth-footer text-center mt-4">
+            <p><a href="#" id="backToLoginFromResetBtn" class="text-primary-600 font-bold">Voltar para Login</a></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- App Container (Protected) -->
+  <div id="appContainer" class="hidden">
+    <div class="app-layout">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <div class="logo">
+            <svg class="logo-icon" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M20 80V40L50 20L80 40V80H60V60H40V80H20Z" fill="#2563eb" />
+              <path d="M35 45L50 35L65 45V55L50 65L35 55V45Z" fill="#60a5fa" />
+              <circle cx="50" cy="50" r="8" fill="white" />
+              <path d="M48 48L52 52M52 48L48 52" stroke="#2563eb" stroke-width="2" stroke-linecap="round" />
+            </svg>
+            <span>VistoriaApp</span>
+          </div>
+        </div>
+
+        <nav class="sidebar-nav">
+          <button class="nav-item" id="historyBtn">
+            <span class="nav-icon">📋</span>
+            <span>Histórico</span>
+          </button>
+
+          <div class="nav-spacer"></div>
+
+          <button onclick="Auth.logout()" class="nav-item nav-item-danger">
+            <span class="nav-icon">🚪</span>
+            <span>Sair</span>
+          </button>
+        </nav>
+      </aside>
+
+      <!-- Main Content Area -->
+      <div class="main-wrapper">
+        <!-- Wizard Navigation -->
+        <nav class="wizard-nav">
+          <div class="wizard-steps">
+            <div class="wizard-step active" data-step="1">
+              <div class="wizard-step-circle">1</div>
+              <div class="wizard-step-label">Identificação</div>
+            </div>
+            <div class="wizard-step" data-step="2">
+              <div class="wizard-step-circle">2</div>
+              <div class="wizard-step-label">Cômodos</div>
+            </div>
+            <div class="wizard-step" data-step="3">
+              <div class="wizard-step-circle">3</div>
+              <div class="wizard-step-label">Revisão</div>
+            </div>
+            <div class="wizard-step" data-step="4">
+              <div class="wizard-step-circle">4</div>
+              <div class="wizard-step-label">Laudo</div>
+            </div>
+          </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="container container-sm">
+
+          <!-- Step 1: Identificação do Imóvel -->
+          <section id="step1" class="step-content">
+            <div class="card">
+              <div class="card-header">
+                <h2 class="card-title">Identificação do Imóvel</h2>
+              </div>
+              <div class="card-body">
+                <form id="propertyForm">
+
+                  <div class="form-group">
+                    <label class="form-label required">Tipo de Vistoria</label>
+                    <select class="form-select" id="inspectionType" required>
+                      <option value="">Selecione...</option>
+                      <option value="entrada">Vistoria de Entrada</option>
+                      <option value="saida">Vistoria de Saída</option>
+                    </select>
+                  </div>
+
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label class="form-label required">Código do Imóvel</label>
+                      <input type="text" class="form-input" id="propertyCode" placeholder="Ex: IMO-2024-001" required>
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label required">Tipo de Imóvel</label>
+                      <select class="form-select" id="propertyType" required>
+                        <option value="">Selecione...</option>
+                        <option value="apartamento">Apartamento</option>
+                        <option value="casa">Casa</option>
+                        <option value="sobrado">Sobrado</option>
+                        <option value="kitnet">Kitnet</option>
+                        <option value="comercial">Comercial</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label required">CEP</label>
+                    <input type="text" class="form-input" id="zipCode" placeholder="00000-000" required>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label required">Endereço (Rua/Avenida)</label>
+                    <input type="text" class="form-input" id="address" placeholder="Ex: Rua das Flores" required>
+                  </div>
+
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label class="form-label required">Número</label>
+                      <input type="text" class="form-input" id="addressNumber" placeholder="Ex: 123" required>
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Complemento</label>
+                      <input type="text" class="form-input" id="addressComplement" placeholder="Ex: Apto 45, Bloco B">
+                    </div>
+                  </div>
+
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label class="form-label required">Bairro</label>
+                      <input type="text" class="form-input" id="neighborhood" required>
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label required">Cidade</label>
+                      <input type="text" class="form-input" id="city" required>
+                    </div>
+                  </div>
+
+                  <!-- Save Draft Button -->
+                  <div
+                    style="margin: 1.5rem 0; padding: 1rem; background: var(--primary-50); border-radius: var(--radius-md); border-left: 4px solid var(--primary-600);">
+                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem;">
+                      <div>
+                        <strong style="color: var(--primary-700);">💾 Salvar Progresso</strong>
+                        <p style="margin: 0.25rem 0 0 0; font-size: 0.875rem; color: var(--gray-600);">
+                          Salve seus dados a qualquer momento para não perder o progresso
+                        </p>
+                      </div>
+                      <button type="button" class="btn btn-primary" id="saveDraftBtn" style="white-space: nowrap;">
+                        💾 Salvar Agora
+                      </button>
+                    </div>
+                  </div>
+
+                  <h3 class="mt-xl mb-md">Composição do Imóvel</h3>
+
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label class="form-label">Quartos</label>
+                      <input type="number" class="form-input" id="bedrooms" min="0" value="0">
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Suítes</label>
+                      <input type="number" class="form-input" id="suites" min="0" value="0">
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Salas</label>
+                      <input type="number" class="form-input" id="livingRooms" min="0" value="0">
+                    </div>
+                  </div>
+
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label class="form-label">Banheiros</label>
+                      <input type="number" class="form-input" id="bathrooms" min="0" value="0">
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Lavabos</label>
+                      <input type="number" class="form-input" id="toilets" min="0" value="0">
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Cozinhas</label>
+                      <input type="number" class="form-input" id="kitchens" min="0" value="1">
+                    </div>
+                  </div>
+
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label class="form-label">Varandas</label>
+                      <input type="number" class="form-input" id="balconies" min="0" value="0">
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Vagas de Garagem</label>
+                      <input type="number" class="form-input" id="parkingSpaces" min="0" value="0">
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Área Total (m²)</label>
+                      <input type="number" class="form-input" id="totalArea" min="0" step="0.01">
+                    </div>
+                  </div>
+
+                  <h3 class="mt-xl mb-md">Características Especiais</h3>
+
+                  <div class="form-group">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                      <input type="checkbox" id="hasPool">
+                      <span>🏊 Piscina</span>
+                    </label>
+                  </div>
+
+                  <div class="form-group">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                      <input type="checkbox" id="hasJacuzzi">
+                      <span>🛁 Hidromassagem</span>
+                    </label>
+                  </div>
+
+                  <div class="form-group">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                      <input type="checkbox" id="hasSauna">
+                      <span>🧖 Sauna</span>
+                    </label>
+                  </div>
+
+                  <div class="form-group">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                      <input type="checkbox" id="hasGarden">
+                      <span>🌳 Jardim</span>
+                    </label>
+                  </div>
+
+                  <div class="form-group">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                      <input type="checkbox" id="hasBackyard">
+                      <span>🏡 Quintal</span>
+                    </label>
+                  </div>
+
+                  <div class="form-group">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                      <input type="checkbox" id="hasBarbecue">
+                      <span>🍖 Churrasqueira/Área Gourmet</span>
+                    </label>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label">Observações Gerais</label>
+                    <textarea class="form-textarea" id="generalNotes"
+                      placeholder="Informações adicionais sobre o imóvel..."></textarea>
+                  </div>
+
+                </form>
+              </div>
+              <div class="card-footer">
+                <button class="btn btn-primary btn-lg" id="nextToRoomsBtn">
+                  Próximo: Cômodos →
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <!-- Step 2: Cômodos -->
+          <section id="step2" class="step-content hidden">
+            <div class="card">
+              <div class="card-header">
+                <h2 class="card-title">Cômodos do Imóvel</h2>
+                <button class="btn btn-primary" id="addRoomBtn">
+                  ➕ Adicionar Cômodo
+                </button>
+              </div>
+              <div class="card-body">
+                <div id="roomsList" class="room-list">
+                  <!-- Rooms will be added dynamically -->
+                </div>
+                <div id="emptyRoomsMessage" class="text-center" style="padding: 3rem; color: var(--gray-500);">
+                  <p style="font-size: 1.125rem; margin-bottom: 1rem;">📋 Nenhum cômodo adicionado ainda</p>
+                  <p>Clique em "Adicionar Cômodo" para começar a documentar</p>
+                </div>
+              </div>
+              <div class="card-footer">
+                <button class="btn btn-secondary" id="backToPropertyBtn">
+                  ← Voltar
+                </button>
+                <button class="btn btn-primary btn-lg" id="nextToReviewBtn">
+                  Próximo: Revisão →
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <!-- Step 3: Revisão -->
+          <section id="step3" class="step-content hidden">
+            <div class="card">
+              <div class="card-header">
+                <h2 class="card-title">Revisão da Vistoria</h2>
+              </div>
+              <div class="card-body">
+                <div id="reviewContent">
+                  <!-- Review content will be generated dynamically -->
+                </div>
+              </div>
+              <div class="card-footer">
+                <button class="btn btn-secondary" id="backToRoomsBtn">
+                  ← Voltar
+                </button>
+                <button class="btn btn-success btn-lg" id="generateReportBtn">
+                  ✓ Gerar Laudo
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <!-- Step 4: Laudo Gerado -->
+          <section id="step4" class="step-content hidden">
+            <div class="card">
+              <div class="card-header">
+                <h2 class="card-title">Laudo de Vistoria</h2>
+              </div>
+              <div class="card-body">
+                <div id="reportPreview">
+                  <!-- Report preview will be shown here -->
+                </div>
+              </div>
+              <div class="card-footer">
+                <button class="btn btn-secondary" id="backToReviewBtn">
+                  ← Voltar
+                </button>
+                <button class="btn btn-success btn-lg" id="downloadPdfBtn">
+                  📥 Download PDF
+                </button>
+                <button class="btn btn-primary" id="newInspectionBtn">
+                  🆕 Nova Vistoria
+                </button>
+              </div>
+            </div>
+          </section>
+
+        </main>
+
+        <!-- Modal: Add/Edit Room -->
+        <div id="roomModal" class="modal-overlay hidden">
+          <div class="modal">
+            <div class="modal-header">
+              <h3 class="modal-title" id="roomModalTitle">Adicionar Cômodo</h3>
+              <button class="modal-close" id="closeRoomModal">&times;</button>
+            </div>
+            <div class="modal-body">
+              <form id="roomForm">
+
+                <div class="form-group">
+                  <label class="form-label required">Tipo de Cômodo</label>
+                  <select class="form-select" id="roomType" required>
+                    <option value="">Selecione...</option>
+                    <option value="quarto">🛏️ Quarto</option>
+                    <option value="suite">🛏️ Suíte</option>
+                    <option value="sala">🛋️ Sala</option>
+                    <option value="cozinha">🍳 Cozinha</option>
+                    <option value="banheiro">🚿 Banheiro</option>
+                    <option value="lavabo">🚽 Lavabo</option>
+                    <option value="varanda">🌅 Varanda</option>
+                    <option value="garagem">🚗 Garagem</option>
+                    <option value="area-servico">🧺 Área de Serviço</option>
+                    <option value="escritorio">💼 Escritório</option>
+                    <option value="despensa">📦 Despensa</option>
+                    <option value="outro">📍 Outro</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Nome/Identificação</label>
+                  <input type="text" class="form-input" id="roomName" placeholder="Ex: Quarto 1, Sala de Estar">
+                  <div class="form-hint">Opcional - para diferenciar cômodos do mesmo tipo</div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label required">Estado de Conservação</label>
+                  <select class="form-select" id="roomCondition" required>
+                    <option value="">Selecione...</option>
+                    <option value="excelente">⭐ Excelente</option>
+                    <option value="bom">✅ Bom</option>
+                    <option value="regular">⚠️ Regular</option>
+                    <option value="ruim">❌ Ruim</option>
+                    <option value="pessimo">🚫 Péssimo</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Descrição Detalhada</label>
+                  <textarea class="form-textarea" id="roomDescription"
+                    placeholder="Descreva o estado do cômodo, itens presentes, problemas encontrados..."></textarea>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Fotos</label>
+                  <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                    <button type="button" class="btn btn-outline" id="takePictureBtn">
+                      📷 Tirar Foto
+                    </button>
+                    <button type="button" class="btn btn-outline" id="uploadPictureBtn">
+                      📁 Upload Foto
+                    </button>
+                  </div>
+                  <input type="file" id="photoUpload" accept="image/*" multiple style="display: none;">
+                  <div id="roomPhotos" class="photo-gallery">
+                    <!-- Photos will be added here -->
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Áudio</label>
+                  <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                    <button type="button" class="btn btn-outline" id="recordAudioBtn">
+                      🎤 Gravar Áudio
+                    </button>
+                    <button type="button" class="btn btn-outline" id="uploadAudioBtn">
+                      📁 Upload Áudio
+                    </button>
+                  </div>
+                  <input type="file" id="audioUpload" accept="audio/*" style="display: none;">
+                  <div id="roomAudios">
+                    <!-- Audio transcriptions will be added here -->
+                  </div>
+                </div>
+
+              </form>
+            </div>
+            <div class="modal-footer">
+              <button class="btn btn-secondary" id="cancelRoomBtn">Cancelar</button>
+              <button class="btn btn-primary" id="saveRoomBtn">Salvar Cômodo</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal: Camera -->
+        <div id="cameraModal" class="modal-overlay hidden">
+          <div class="modal">
+            <div class="modal-header">
+              <h3 class="modal-title">Capturar Foto</h3>
+              <button class="modal-close" id="closeCameraModal">&times;</button>
+            </div>
+            <div class="modal-body">
+              <div class="camera-preview">
+                <video id="cameraVideo" autoplay playsinline></video>
+                <canvas id="cameraCanvas" style="display: none;"></canvas>
+              </div>
+              <div class="camera-controls">
+                <button class="btn btn-secondary" id="cancelCameraBtn">Cancelar</button>
+                <button class="btn btn-primary btn-lg" id="capturePhotoBtn">📸 Capturar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal: Audio Recorder -->
+        <div id="audioModal" class="modal-overlay hidden">
+          <div class="modal">
+            <div class="modal-header">
+              <h3 class="modal-title">Gravar Áudio</h3>
+              <button class="modal-close" id="closeAudioModal">&times;</button>
+            </div>
+            <div class="modal-body">
+              <div class="audio-recorder">
+                <div id="recordingStatus" class="hidden">
+                  <div class="recording-indicator">
+                    <div class="recording-dot"></div>
+                    <span>Gravando... <span id="recordingTime">00:00</span></span>
+                  </div>
+                </div>
+                <div class="audio-visualizer" id="audioVisualizer">
+                  🎤 Pronto para gravar
+                </div>
+                <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 1.5rem;">
+                  <button class="btn btn-secondary" id="cancelAudioBtn">Cancelar</button>
+                  <button class="btn btn-error" id="startRecordingBtn">⏺️ Iniciar Gravação</button>
+                  <button class="btn btn-primary hidden" id="stopRecordingBtn">⏹️ Parar</button>
+                </div>
+                <div id="transcriptionArea" class="hidden" style="margin-top: 1.5rem;">
+                  <!-- Stage 1: Raw Transcription -->
+                  <div id="rawTranscriptionSection">
+                    <label class="form-label">📝 Transcrição Bruta</label>
+                    <div
+                      style="background: var(--gray-50); padding: 0.75rem; border-radius: var(--radius-sm); margin-bottom: 0.5rem; font-size: 0.875rem; color: var(--gray-700);">
+                      ℹ️ Revise a transcrição e corrija se necessário antes de formatar
+                    </div>
+                    <textarea class="form-textarea" id="transcriptionText" placeholder="A transcrição aparecerá aqui..."
+                      style="min-height: 150px;"></textarea>
+                    <button class="btn btn-primary" id="formatTranscriptionBtn" style="margin-top: 1rem; width: 100%;">
+                      ✨ Formatar para Laudo Profissional
+                    </button>
+                  </div>
+
+                  <!-- Stage 2: Formatted Text (hidden initially) -->
+                  <div id="formattedTranscriptionSection" class="hidden" style="margin-top: 1.5rem;">
+                    <label class="form-label">📋 Texto Formatado para Laudo</label>
+                    <div
+                      style="background: var(--success-50); padding: 0.75rem; border-radius: var(--radius-sm); margin-bottom: 0.5rem; font-size: 0.875rem; color: var(--success-700);">
+                      ✅ Texto formatado com pontuação, gramática e linguagem técnica adequadas
+                    </div>
+                    <textarea class="form-textarea" id="formattedText" placeholder="O texto formatado aparecerá aqui..."
+                      style="min-height: 150px;"></textarea>
+
+                    <!-- Choice Buttons -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+                      <button class="btn btn-outline" id="useRawTextBtn">
+                        📝 Usar Texto Bruto
+                      </button>
+                      <button class="btn btn-success" id="useFormattedTextBtn">
+                        ✅ Usar Texto Formatado
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal: Inspection History -->
+        <div id="historyModal" class="modal-overlay hidden">
+          <div class="modal modal-lg">
+            <div class="modal-header">
+              <h3 class="modal-title">📋 Histórico de Vistorias</h3>
+              <button class="modal-close" id="closeHistoryModal">&times;</button>
+            </div>
+            <div class="modal-body">
+              <div class="history-tabs">
+                <button class="history-tab active" data-tab="in-progress">
+                  Em Andamento (<span id="inProgressCount">0</span>)
+                </button>
+                <button class="history-tab" data-tab="completed">
+                  Finalizadas (<span id="completedCount">0</span>)
+                </button>
+              </div>
+              <div id="historyContent" class="history-content">
+                <!-- Inspection cards will be rendered here -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- External Libraries -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+        </main> <!-- End Main Content -->
+      </div> <!-- End App Layout -->
+    </div> <!-- End App Container -->
+
+
+
+    <!-- Application Scripts -->
+    <script src="utils.js"></script>
+    <script src="cep-autofill.js"></script>
+    <script src="storage.js"></script>
+    <script src="history.js"></script>
+    <script src="ai-formatter.js"></script>
+    <script src="camera.js"></script>
+    <script src="audio.js"></script>
+    <script src="rooms.js"></script>
+    <script src="report.js"></script>
+    <script src="pdf-generator.js"></script>
+    <script src="auth.js"></script>
+    <script src="app.js"></script>
+
+</body>
+
+</html>
