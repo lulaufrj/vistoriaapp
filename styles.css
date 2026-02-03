@@ -1307,3 +1307,110 @@ label:has(input[type="checkbox"]) span {
         position: static;
     }
 }
+/* ============================================
+   Migration Banner Styles
+   ============================================ */
+
+.migration-banner {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    max-width: 500px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+    z-index: 10000;
+    animation: slideInUp 0.5s ease-out;
+}
+
+@keyframes slideInUp {
+    from {
+        transform: translateY(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.migration-banner-content {
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.migration-banner-content.success {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+}
+
+.migration-banner-content.error {
+    background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+}
+
+.migration-icon {
+    font-size: 2.5rem;
+    flex-shrink: 0;
+}
+
+.migration-text {
+    flex: 1;
+}
+
+.migration-text strong {
+    display: block;
+    font-size: 1.1rem;
+    margin-bottom: 0.25rem;
+}
+
+.migration-text p {
+    margin: 0;
+    font-size: 0.9rem;
+    opacity: 0.95;
+}
+
+.migration-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+.migration-actions .btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    white-space: nowrap;
+}
+
+.migration-actions .btn-secondary {
+    background: rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.3);
+}
+
+.migration-actions .btn-secondary:hover {
+    background: rgba(255,255,255,0.3);
+}
+
+@media (max-width: 768px) {
+    .migration-banner {
+        bottom: 10px;
+        right: 10px;
+        left: 10px;
+        max-width: none;
+    }
+    
+    .migration-banner-content {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .migration-actions {
+        width: 100%;
+        flex-direction: column;
+    }
+    
+    .migration-actions .btn {
+        width: 100%;
+    }
+}

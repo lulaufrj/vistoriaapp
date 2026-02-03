@@ -21,6 +21,7 @@ app.use(express.static(path.join(__dirname)));
 // ============================================
 const mongoose = require('mongoose');
 const User = require('./models/User');
+const Inspection = require('./models/Inspection');
 
 // Connect to MongoDB
 const MONGODB_URI = process.env.MONGODB_URI;
@@ -145,6 +146,179 @@ app.post('/api/auth/reset-password', async (req, res) => {
     } catch (error) {
         console.error('Reset Password error:', error);
         res.status(500).json({ success: false, error: 'Erro no servidor' });
+    }
+});
+
+
+// ============================================
+// Inspection Routes (MongoDB)
+// ============================================
+
+// Helper: Extract userId from token (mock implementation)
+function getUserIdFromToken(req) {
+    const token = req.headers.authorization?.replace('Bearer ', '');
+    if (!token) return null;
+
+    // Extract userId from mock token format: token_userId_timestamp
+    const parts = token.split('_');
+    return parts[1] || null;
+}
+
+// GET all inspections for logged-in user
+app.get('/api/inspections', async (req, res) => {
+    try {
+        const userId = getUserIdFromToken(req);
+        if (!userId) {
+            return res.status(401).json({ success: false, error: 'Não autorizado' });
+        }
+
+        const inspections = await Inspection.find({ userId })
+            .sort({ createdAt: -1 })
+            .select('-__v');
+
+        res.json({ success: true, inspections });
+    } catch (error) {
+        console.error('Get inspections error:', error);
+        res.status(500).json({ success: false, error: 'Erro ao buscar vistorias' });
+    }
+});
+
+// GET single inspection by ID
+app.get('/api/inspections/:id', async (req, res) => {
+    try {
+        const userId = getUserIdFromToken(req);
+        if (!userId) {
+            return res.status(401).json({ success: false, error: 'Não autorizado' });
+        }
+
+        const inspection = await Inspection.findOne({
+            _id: req.params.id,
+            userId
+        });
+
+        if (!inspection) {
+            return res.status(404).json({ success: false, error: 'Vistoria não encontrada' });
+        }
+
+        res.json({ success: true, inspection });
+    } catch (error) {
+        console.error('Get inspection error:', error);
+        res.status(500).json({ success: false, error: 'Erro ao buscar vistoria' });
+    }
+});
+
+// POST create new inspection
+app.post('/api/inspections', async (req, res) => {
+    try {
+        const userId = getUserIdFromToken(req);
+        if (!userId) {
+            return res.status(401).json({ success: false, error: 'Não autorizado' });
+        }
+
+        const inspectionData = {
+            ...req.body,
+            userId
+        };
+
+        const inspection = await Inspection.create(inspectionData);
+
+        res.json({ success: true, inspection });
+        console.log(`✅ Inspection created: ${inspection._id}`);
+    } catch (error) {
+        console.error('Create inspection error:', error);
+        res.status(500).json({ success: false, error: 'Erro ao criar vistoria' });
+    }
+});
+
+// PUT update inspection
+app.put('/api/inspections/:id', async (req, res) => {
+    try {
+        const userId = getUserIdFromToken(req);
+        if (!userId) {
+            return res.status(401).json({ success: false, error: 'Não autorizado' });
+        }
+
+        const inspection = await Inspection.findOneAndUpdate(
+            { _id: req.params.id, userId },
+            { ...req.body, updatedAt: Date.now() },
+            { new: true, runValidators: true }
+        );
+
+        if (!inspection) {
+            return res.status(404).json({ success: false, error: 'Vistoria não encontrada' });
+        }
+
+        res.json({ success: true, inspection });
+        console.log(`✅ Inspection updated: ${inspection._id}`);
+    } catch (error) {
+        console.error('Update inspection error:', error);
+        res.status(500).json({ success: false, error: 'Erro ao atualizar vistoria' });
+    }
+});
+
+// DELETE inspection
+app.delete('/api/inspections/:id', async (req, res) => {
+    try {
+        const userId = getUserIdFromToken(req);
+        if (!userId) {
+            return res.status(401).json({ success: false, error: 'Não autorizado' });
+        }
+
+        const inspection = await Inspection.findOneAndDelete({
+            _id: req.params.id,
+            userId
+        });
+
+        if (!inspection) {
+            return res.status(404).json({ success: false, error: 'Vistoria não encontrada' });
+        }
+
+        res.json({ success: true, message: 'Vistoria deletada com sucesso' });
+        console.log(`🗑️ Inspection deleted: ${req.params.id}`);
+    } catch (error) {
+        console.error('Delete inspection error:', error);
+        res.status(500).json({ success: false, error: 'Erro ao deletar vistoria' });
+    }
+});
+
+// POST migrate inspections from localStorage
+app.post('/api/inspections/migrate', async (req, res) => {
+    try {
+        const userId = getUserIdFromToken(req);
+        if (!userId) {
+            return res.status(401).json({ success: false, error: 'Não autorizado' });
+        }
+
+        const { inspections } = req.body;
+
+        if (!inspections || typeof inspections !== 'object') {
+            return res.status(400).json({ success: false, error: 'Dados inválidos' });
+        }
+
+        const migratedInspections = [];
+
+        for (const [key, inspectionData] of Object.entries(inspections)) {
+            try {
+                const inspection = await Inspection.create({
+                    ...inspectionData,
+                    userId
+                });
+                migratedInspections.push(inspection);
+            } catch (err) {
+                console.error(`Error migrating inspection ${key}:`, err);
+            }
+        }
+
+        res.json({
+            success: true,
+            message: `${migratedInspections.length} vistorias migradas com sucesso`,
+            count: migratedInspections.length
+        });
+
+        console.log(`📦 Migrated ${migratedInspections.length} inspections for user ${userId}`);
+    } catch (error) {
+        console.error('Migration error:', error);
+        res.status(500).json({ success: false, error: 'Erro na migração' });
     }
 });
 
