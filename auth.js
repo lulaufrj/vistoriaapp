@@ -3,7 +3,10 @@
 // ============================================
 
 window.Auth = {
-    API_URL: 'http://localhost:3001/api/auth',
+    // Auto-detect API URL based on environment
+    API_URL: window.location.hostname === 'localhost'
+        ? 'http://localhost:3001/api/auth'
+        : `${window.location.origin}/api/auth`,
 
     /**
      * Initialize Auth System

@@ -3,8 +3,10 @@
 // ============================================
 
 const AIFormatter = {
-    // Backend API configuration
-    BACKEND_URL: 'http://localhost:3001',
+    // Auto-detect Backend URL based on environment
+    BACKEND_URL: window.location.hostname === 'localhost'
+        ? 'http://localhost:3001'
+        : window.location.origin,
 
     /**
      * Format informal text to professional inspection report language
