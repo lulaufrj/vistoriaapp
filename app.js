@@ -61,18 +61,17 @@ const Wizard = {
                 return;
             }
             this.savePropertyData();
-            this.goToStep(2);
+            this.goToStep(2); // Go to rooms step
         } else if (currentStep === 2) {
-            // Check if at least one room is added
+            // Validate rooms before going to review
             if (Rooms.getRooms().length === 0) {
-                if (!confirm('Nenhum cômodo foi adicionado. Deseja continuar mesmo assim?')) {
-                    return;
-                }
+                Utils.showNotification('Adicione pelo menos um cômodo antes de continuar', 'warning');
+                return; // Don't allow proceeding without rooms
             }
-            this.goToStep(3);
+            this.goToStep(3); // Go to review
             this.showReview();
         } else if (currentStep === 3) {
-            this.goToStep(4);
+            this.goToStep(4); // Go to report
             this.generateReport();
         }
     },
