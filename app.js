@@ -298,6 +298,9 @@ document.addEventListener('DOMContentLoaded', () => {
             window.AppState.rooms = inspection.rooms;
             window.AppState.currentStep = inspection.currentStep;
 
+            // Populate property form
+            Wizard.populateForm(inspection.propertyData);
+
             // Load rooms
             if (inspection.rooms && inspection.rooms.length > 0) {
                 Rooms.setRooms(inspection.rooms);
