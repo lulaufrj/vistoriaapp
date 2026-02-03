@@ -117,6 +117,54 @@ const Wizard = {
     },
 
     /**
+     * Populate property form from saved data
+     */
+    populateForm(data) {
+        if (!data) return;
+
+        // Map data to fields
+        const setIfExists = (id, value) => {
+            const el = document.getElementById(id);
+            if (el && value !== undefined && value !== null) {
+                if (el.type === 'checkbox') {
+                    el.checked = value;
+                } else {
+                    el.value = value;
+                }
+            }
+        };
+
+        setIfExists('inspectionType', data.inspectionType);
+        setIfExists('propertyCode', data.code);
+        setIfExists('propertyType', data.type);
+        setIfExists('address', data.address);
+        setIfExists('addressNumber', data.addressNumber);
+        setIfExists('addressComplement', data.addressComplement);
+        setIfExists('neighborhood', data.neighborhood);
+        setIfExists('city', data.city);
+        setIfExists('zipCode', data.zipCode);
+
+        setIfExists('bedrooms', data.bedrooms);
+        setIfExists('suites', data.suites);
+        setIfExists('livingRooms', data.livingRooms);
+        setIfExists('bathrooms', data.bathrooms);
+        setIfExists('toilets', data.toilets);
+        setIfExists('kitchens', data.kitchens);
+        setIfExists('balconies', data.balconies);
+        setIfExists('parkingSpaces', data.parkingSpaces);
+        setIfExists('totalArea', data.totalArea);
+
+        setIfExists('hasPool', data.hasPool);
+        setIfExists('hasJacuzzi', data.hasJacuzzi);
+        setIfExists('hasSauna', data.hasSauna);
+        setIfExists('hasGarden', data.hasGarden);
+        setIfExists('hasBackyard', data.hasBackyard);
+        setIfExists('hasBarbecue', data.hasBarbecue);
+
+        setIfExists('generalNotes', data.generalNotes);
+    },
+
+    /**
      * Save property data from form
      */
     savePropertyData() {
