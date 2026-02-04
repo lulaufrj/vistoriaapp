@@ -193,10 +193,15 @@ app.get('/api/inspections/:id', async (req, res) => {
             return res.status(401).json({ success: false, error: 'Não autorizado' });
         }
 
-        const inspection = await Inspection.findOne({
-            _id: req.params.id,
-            userId
-        });
+        // Try finding by internal ID or localId
+        const query = userId ? { userId } : {};
+        if (mongoose.Types.ObjectId.isValid(req.params.id)) {
+            query._id = req.params.id;
+        } else {
+            query.localId = req.params.id;
+        }
+
+        const inspection = await Inspection.findOne(query);
 
         if (!inspection) {
             return res.status(404).json({ success: false, error: 'Vistoria não encontrada' });
