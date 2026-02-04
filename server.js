@@ -224,6 +224,7 @@ app.post('/api/inspections', async (req, res) => {
 
         const inspectionData = {
             ...req.body,
+            localId: req.body.id || req.body.localId, // Map frontend 'id' to schema 'localId'
             userId
         };
 
@@ -279,10 +280,15 @@ app.delete('/api/inspections/:id', async (req, res) => {
             return res.status(401).json({ success: false, error: 'Não autorizado' });
         }
 
-        const inspection = await Inspection.findOneAndDelete({
-            _id: req.params.id,
-            userId
-        });
+        // Delete by localId (mapped from frontend id)
+        const query = { userId };
+        if (mongoose.Types.ObjectId.isValid(req.params.id)) {
+            query._id = req.params.id;
+        } else {
+            query.localId = req.params.id;
+        }
+
+        const inspection = await Inspection.findOneAndDelete(query);
 
         if (!inspection) {
             return res.status(404).json({ success: false, error: 'Vistoria não encontrada' });
