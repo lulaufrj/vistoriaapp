@@ -149,7 +149,12 @@ const Storage = {
             inspection.updatedAt = new Date().toISOString();
             inspection.currentStep = window.AppState.currentStep || 1;
             inspection.propertyData = window.AppState.propertyData || {};
-            inspection.rooms = window.AppState.rooms || [];
+
+            // Critical Fix: Read rooms from Rooms module to ensure we have the latest state
+            // AppState.rooms might be stale if Rooms module updated its internal array reference
+            inspection.rooms = (typeof Rooms !== 'undefined' && Rooms.getRooms)
+                ? Rooms.getRooms()
+                : (window.AppState.rooms || []);
 
             // Final check: Don't save if it's still effectively empty (unless it was already saved/valid)
             // But if we are here, we either had data OR it was an existing inspection being updated.
