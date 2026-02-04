@@ -8,6 +8,14 @@ const inspectionSchema = new mongoose.Schema({
         index: true
     },
 
+    // Frontend ID (e.g. "inspection_123...")
+    localId: {
+        type: String,
+        required: true,
+        index: true,
+        unique: true
+    },
+
     status: {
         type: String,
         enum: ['in-progress', 'completed'],
@@ -19,19 +27,10 @@ const inspectionSchema = new mongoose.Schema({
         default: 1
     },
 
-    // Property Data
+    // Flexible Property Data (stores whatever frontend sends)
     propertyData: {
-        endereco: String,
-        numero: String,
-        complemento: String,
-        bairro: String,
-        cidade: String,
-        estado: String,
-        cep: String,
-        tipoImovel: String,
-        finalidade: String,
-        proprietario: String,
-        solicitante: String
+        type: mongoose.Schema.Types.Mixed,
+        default: {}
     },
 
     // Rooms array
@@ -39,9 +38,9 @@ const inspectionSchema = new mongoose.Schema({
         id: String,
         name: String,
         type: String,
-        photos: [String], // Base64 encoded images
-        audioTranscription: String,
-        audioBlob: String, // Base64 encoded audio
+        photos: [String], // URLs or Base64
+        audios: [String], // URLs or Base64 (frontend uses 'audios' not 'audioBlob')
+        condition: String,
         description: String,
         observations: String
     }],
