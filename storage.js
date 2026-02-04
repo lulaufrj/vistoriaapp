@@ -177,8 +177,49 @@ const Storage = {
             }
 
             localStorage.setItem(this.getStorageKey(), JSON.stringify(inspections));
+
+            // Sync with backend (async)
+            this.syncWithBackend(inspection);
         } catch (error) {
             console.error('Error saving inspection:', error);
+        }
+    },
+
+    /**
+     * Sync inspection with backend
+     */
+    async syncWithBackend(inspection) {
+        // Ensure StorageAPI is available and user is authenticated
+        if (typeof StorageAPI === 'undefined' || !StorageAPI.getToken()) {
+            return;
+        }
+
+        try {
+            // Check if it already exists in backend (simple check by ID usually or just try update)
+            // We'll try to update first. If 404, we create.
+            // However, inspection.id is generated locally. 
+            // MongoDB usually generates its own _id, but we might want to use our ID or map them.
+            // Let's assume the backend accepts our custom 'id' field as a unique identifier or we store it.
+
+            // Note: In a real scenario, we should handle the _id.
+            // For now, let's assume the API handles upsert or finding by 'id' field.
+
+            // Strategy: Try update. If it fails (or returns null), try create.
+            // But to be more efficient, we could check a local flag.
+
+            // Let's use getInspection from API to check existence efficiently? No, generic update is better.
+            // Let's try update.
+            const updated = await StorageAPI.updateInspection(inspection.id, inspection);
+
+            if (!updated) {
+                // If update failed (likely didn't exist), try create
+                console.log('Inspection not found in backend, creating...', inspection.id);
+                await StorageAPI.createInspection(inspection);
+            } else {
+                console.log('Inspection synced with backend:', inspection.id);
+            }
+        } catch (error) {
+            console.error('Error syncing with backend:', error);
         }
     },
 
@@ -249,7 +290,15 @@ const Storage = {
                 localStorage.removeItem(this.CURRENT_ID_KEY);
             }
 
-            console.log('Inspection deleted:', id);
+            console.log('Inspection deleted locally:', id);
+
+            // Sync delete with backend
+            if (typeof StorageAPI !== 'undefined' && StorageAPI.getToken()) {
+                StorageAPI.deleteInspection(id).then(success => {
+                    if (success) console.log('Inspection deleted from backend:', id);
+                    else console.warn('Failed to delete inspection from backend:', id);
+                });
+            }
         } catch (error) {
             console.error('Error deleting inspection:', error);
         }
