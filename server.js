@@ -240,10 +240,18 @@ app.put('/api/inspections/:id', async (req, res) => {
             return res.status(401).json({ success: false, error: 'Não autorizado' });
         }
 
+        // Update by localId (mapped from frontend id)
+        const query = { userId };
+        if (mongoose.Types.ObjectId.isValid(req.params.id)) {
+            query._id = req.params.id;
+        } else {
+            query.localId = req.params.id;
+        }
+
         const inspection = await Inspection.findOneAndUpdate(
-            { _id: req.params.id, userId },
+            query,
             { ...req.body, updatedAt: Date.now() },
-            { new: true, runValidators: true }
+            { new: true, upsert: true, setDefaultsOnInsert: true }
         );
 
         if (!inspection) {
