@@ -5,6 +5,7 @@
 const Storage = {
     BASE_KEY: 'vistoriaapp_inspections',
     CURRENT_ID_KEY: 'vistoriaapp_current_id',
+    DELETED_IDS_KEY: 'vistoriaapp_deleted_ids',
     AUTO_SAVE_INTERVAL: 30000, // 30 seconds
 
     /**
@@ -173,6 +174,13 @@ const Storage = {
      */
     saveInspection(inspection) {
         try {
+            // Check if ID is in deleted list (Tombstone check)
+            const deletedIds = JSON.parse(localStorage.getItem(this.DELETED_IDS_KEY) || '[]');
+            if (deletedIds.includes(inspection.id)) {
+                console.warn(`[Storage] Prevented resurrection of deleted inspection: ${inspection.id}`);
+                return;
+            }
+
             const inspections = this.getAllInspections();
             const index = inspections.findIndex(i => i.id === inspection.id);
 
@@ -188,6 +196,55 @@ const Storage = {
             this.syncWithBackend(inspection);
         } catch (error) {
             console.error('Error saving inspection:', error);
+        }
+    },
+
+    // ... syncWithBackend ...
+
+    /**
+     * Delete inspection
+     */
+    deleteInspection(id) {
+        try {
+            const inspections = this.getAllInspections();
+            const filtered = inspections.filter(i => i.id !== id);
+            localStorage.setItem(this.getStorageKey(), JSON.stringify(filtered));
+
+            // Add to Tombstones (Deleted IDs)
+            const deletedIds = JSON.parse(localStorage.getItem(this.DELETED_IDS_KEY) || '[]');
+            if (!deletedIds.includes(id)) {
+                deletedIds.push(id);
+                localStorage.setItem(this.DELETED_IDS_KEY, JSON.stringify(deletedIds));
+            }
+
+            // If deleting current inspection, clear current ID and AppState
+            if (this.getCurrentInspectionId() === id) {
+                localStorage.removeItem(this.CURRENT_ID_KEY);
+
+                // Clear in-memory state to prevent "resurrection" by auto-save
+                if (window.AppState) {
+                    window.AppState.propertyData = {};
+                    window.AppState.rooms = [];
+                    window.AppState.currentStep = 1;
+                }
+
+                // If Rooms module exists, clear it too
+                if (typeof Rooms !== 'undefined' && Rooms.clearRooms) {
+                    Rooms.clearRooms();
+                }
+            }
+
+            console.log('Inspection deleted locally:', id);
+
+            // Sync delete with backend
+            if (typeof StorageAPI !== 'undefined' && StorageAPI.getToken()) {
+                StorageAPI.deleteInspection(id).then(success => {
+                    if (success) console.log('Inspection deleted from backend:', id);
+                    else console.warn('Failed to delete inspection from backend:', id);
+                });
+            }
+        } catch (error) {
+            console.error('Error deleting inspection:', error);
         }
     },
 

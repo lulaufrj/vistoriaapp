@@ -6,12 +6,12 @@ const PDFGenerator = {
     /**
      * Generate PDF from report HTML
      */
-    async generatePDF(propertyData, rooms) {
+    async generatePDF(propertyData, rooms, metadata = null) {
         try {
             Utils.showNotification('Gerando PDF... Aguarde', 'info');
 
             // Get the report HTML
-            const reportHTML = Report.generateReportHTML(propertyData, rooms);
+            const reportHTML = Report.generateReportHTML(propertyData, rooms, metadata);
 
             // Create a temporary container
             const container = document.createElement('div');

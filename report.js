@@ -199,7 +199,7 @@ const Report = {
   /**
    * Generate final report HTML
    */
-  generateReportHTML(propertyData, rooms) {
+  generateReportHTML(propertyData, rooms, metadata = null) {
     const date = Utils.formatDate();
 
     return `
@@ -398,6 +398,9 @@ const Report = {
           
           ${rooms.map((room, index) => this.generateRoomHTML(room, index + 1)).join('')}
         </div>
+        
+        <!-- History (Traceability) -->
+        ${this.generateHistoryHTML(metadata)}
 
         <!-- Signatures -->
         <div class="signature-section">
@@ -425,30 +428,27 @@ const Report = {
   /**
    * Generate single room HTML for report
    */
-  generateRoomHTML(room, number) {
-    const displayName = room.name || Utils.getRoomTypeLabel(room.type);
+      < div class="room-section" >
+  <div class="room-header">
+    <div class="room-title">
+      ${number}. ${displayName}
+    </div>
+    <div class="condition-badge condition-${room.condition}">
+      ${Utils.getConditionLabel(room.condition)}
+    </div>
+  </div>
 
-    return `
-      <div class="room-section">
-        <div class="room-header">
-          <div class="room-title">
-            ${number}. ${displayName}
-          </div>
-          <div class="condition-badge condition-${room.condition}">
-            ${Utils.getConditionLabel(room.condition)}
-          </div>
-        </div>
-
-        ${room.description ? `
+        ${
+  room.description ? `
           <div class="description">
             <strong>Descrição:</strong><br>
             ${room.description}
           </div>
-        ` : ''}
+        ` : ''
+}
 
-
-
-        ${room.photos && room.photos.length > 0 ? `
+        ${
+  room.photos && room.photos.length > 0 ? `
           <div>
             <strong>Registro Fotográfico (${room.photos.length} foto(s)):</strong>
             <div class="photos-grid">
@@ -459,16 +459,80 @@ const Report = {
               `).join('')}
             </div>
           </div>
-        ` : ''}
-      </div>
-    `;
+        ` : ''
+}
+      </div >
+  `;
+  },
+
+  /**
+   * Generate history table HTML
+   */
+  generateHistoryHTML(metadata) {
+    if (!metadata) return '';
+    
+    const createdAt = metadata.createdAt ? new Date(metadata.createdAt).toLocaleString('pt-BR') : 'N/A';
+    const history = metadata.editHistory || [];
+
+    if (history.length === 0 && !metadata.completedAt) return '';
+
+    let historyRows = '';
+    
+    // Add creation
+    historyRows += `
+  < tr >
+        <td style="padding: 8px; border-bottom: 1px solid #eee;">${createdAt}</td>
+        <td style="padding: 8px; border-bottom: 1px solid #eee;">Criação da Vistoria</td>
+        <td style="padding: 8px; border-bottom: 1px solid #eee;">Sistema</td>
+      </tr >
+  `;
+
+    // Add history items
+    history.forEach(item => {
+      historyRows += `
+  < tr >
+          <td style="padding: 8px; border-bottom: 1px solid #eee;">${new Date(item.timestamp).toLocaleString('pt-BR')}</td>
+          <td style="padding: 8px; border-bottom: 1px solid #eee;">${this.translateAction(item.action)}</td>
+          <td style="padding: 8px; border-bottom: 1px solid #eee;">${item.user || 'Usuário'}</td>
+        </tr >
+  `;
+    });
+
+    return `
+  < div style = "margin-top: 30px; page-break-inside: avoid;" >
+        <h2 style="color: #2563eb; border-bottom: 2px solid #2563eb; padding-bottom: 10px;">
+          HISTÓRICO DA VISTORIA
+        </h2>
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.9em;">
+          <thead>
+            <tr style="background: #f3f4f6; text-align: left;">
+              <th style="padding: 10px; border-bottom: 2px solid #e5e7eb;">Data / Hora</th>
+              <th style="padding: 10px; border-bottom: 2px solid #e5e7eb;">Ação</th>
+              <th style="padding: 10px; border-bottom: 2px solid #e5e7eb;">Responsável</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${historyRows}
+          </tbody>
+        </table>
+      </div >
+  `;
+  },
+
+  translateAction(action) {
+    const map = {
+      'finalized': 'Finalização',
+      'reopened': 'Reabertura para Edição',
+      'completed': 'Conclusão'
+    };
+    return map[action] || action;
   },
 
   /**
    * Show report preview
    */
-  showReportPreview(propertyData, rooms) {
-    const html = this.generateReportHTML(propertyData, rooms);
+  showReportPreview(propertyData, rooms, metadata = null) {
+    const html = this.generateReportHTML(propertyData, rooms, metadata);
     const container = document.getElementById('reportPreview');
     container.innerHTML = html;
   }

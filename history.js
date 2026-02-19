@@ -280,7 +280,41 @@ const InspectionHistory = {
      * Delete inspection
      */
     deleteInspection(id) {
+        // Check if we are deleting the CURRENTLY OPEN inspection
+        const currentId = Storage.getCurrentInspectionId();
+        const isDeletingCurrent = currentId === id;
+
         Storage.deleteInspection(id);
+
+        if (isDeletingCurrent) {
+            console.log('Deleted currently active inspection. Resetting UI...');
+
+            // Reset the Property Form logic
+            if (document.getElementById('propertyForm')) {
+                document.getElementById('propertyForm').reset();
+            }
+
+            // Reset Rooms logic
+            if (typeof Rooms !== 'undefined' && Rooms.clearRooms) {
+                Rooms.clearRooms();
+            }
+
+            // Go back to start
+            if (typeof Wizard !== 'undefined' && Wizard.goToStep) {
+                Wizard.goToStep(1);
+            }
+
+            // Force clear AppState (double check)
+            window.AppState = {
+                currentStep: 1,
+                propertyData: {},
+                rooms: []
+            };
+
+            Utils.showNotification('Vistoria ativa foi excluída.', 'info');
+        } else {
+            Utils.showNotification('Vistoria deletada', 'info');
+        }
 
         // Refresh current tab
         const activeTab = document.querySelector('.history-tab.active');
@@ -289,7 +323,6 @@ const InspectionHistory = {
         }
 
         this.updateCounts();
-        Utils.showNotification('Vistoria deletada', 'info');
     },
 
     /**
@@ -306,7 +339,7 @@ const InspectionHistory = {
         Utils.showNotification('Gerando PDF...', 'info');
 
         try {
-            await PDFGenerator.generatePDF(inspection.propertyData, inspection.rooms);
+            await PDFGenerator.generatePDF(inspection.propertyData, inspection.rooms, inspection);
             Utils.showNotification('PDF gerado com sucesso!', 'success');
         } catch (error) {
             console.error('Error generating PDF:', error);

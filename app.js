@@ -221,8 +221,13 @@ const Wizard = {
     /**
      * Generate final report
      */
+    /**
+     * Generate final report
+     */
     generateReport() {
-        Report.showReportPreview(window.AppState.propertyData, Rooms.getRooms());
+        const currentId = Storage.getCurrentInspectionId();
+        const inspection = currentId ? Storage.getInspection(currentId) : null;
+        Report.showReportPreview(window.AppState.propertyData, Rooms.getRooms(), inspection);
     },
 
     /**
@@ -308,7 +313,9 @@ if (backToRoomsFromReportBtn) {
 
 // PDF Download
 document.getElementById('downloadPdfBtn').addEventListener('click', async () => {
-    await PDFGenerator.generatePDF(window.AppState.propertyData, Rooms.getRooms());
+    const currentId = Storage.getCurrentInspectionId();
+    const inspection = currentId ? Storage.getInspection(currentId) : null;
+    await PDFGenerator.generatePDF(window.AppState.propertyData, Rooms.getRooms(), inspection);
 });
 
 // New Inspection
