@@ -116,13 +116,8 @@ const Report = {
             <strong>📷 Fotos (${photoCount}):</strong>
             <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 0.5rem; margin-top: 0.5rem;">
               ${room.photos.map(photo => `
-                <div style="position: relative; border: 1px solid red; padding: 5px;">
-                    <img src="${photo.url || photo.data}" alt="Foto" style="width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: var(--radius-sm);">
-                    <div style="font-size: 10px; color: red; background: white; word-break: break-all;">
-                        DLen: ${photo.data ? photo.data.length : 'N/A'}<br>
-                        DStart: ${photo.data ? photo.data.substring(0, 20) : 'N/A'}<br>
-                        URL: ${photo.url || 'N/A'}
-                    </div>
+                <div style="position: relative;">
+                    <img src="${photo.url || photo.data}" alt="Foto" style="width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--gray-200);">
                 </div>
               `).join('')}
             </div>
@@ -458,13 +453,8 @@ const Report = {
             <strong>Registro Fotográfico (${room.photos.length} foto(s)):</strong>
             <div class="photos-grid">
               ${room.photos.map(photo => `
-                <div style="position: relative; border: 1px solid red; padding: 5px;">
-                    <img src="${photo.url || photo.data}" alt="Foto do cômodo" style="width: 100%;">
-                    <div style="font-size: 10px; color: red; background: white; word-break: break-all;">
-                        DLen: ${photo.data ? photo.data.length : 'N/A'}<br>
-                        DStart: ${photo.data ? photo.data.substring(0, 20) : 'N/A'}<br>
-                        URL: ${photo.url || 'N/A'}
-                    </div>
+                <div style="position: relative;">
+                    <img src="${photo.url || photo.data}" alt="Foto do cômodo" style="width: 100%; border-radius: 4px; border: 1px solid #e5e7eb;">
                 </div>
               `).join('')}
             </div>
