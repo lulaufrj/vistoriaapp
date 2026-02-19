@@ -341,19 +341,14 @@ const AudioRecorder = {
             }
             if (!formatted) formatted = AIFormatter.basicAudioFormatting(audio.transcription);
 
-            const descInput = document.getElementById('roomDescription');
-            if (descInput) {
-                const currentText = descInput.value.trim();
-                descInput.value = currentText ? currentText + '\n\n' + formatted : formatted;
+            // SAVE to Object only, DO NOT append to main description
+            audio.formattedTranscription = formatted;
 
-                // Trigger change events
-                descInput.dispatchEvent(new Event('change'));
-                descInput.dispatchEvent(new Event('input'));
+            // Re-render
+            this.renderAudios();
 
-                Utils.showNotification('✅ Adicionado à descrição!', 'success');
-            } else {
-                Utils.showNotification('❌ Campo de descrição não encontrado!', 'error');
-            }
+            Utils.showNotification('✅ Laudo gerado para o áudio!', 'success');
+
         } catch (error) {
             console.error('Error in retroactive formatting:', error);
             Utils.showNotification('Erro ao formatar audio', 'error');
@@ -377,24 +372,42 @@ const AudioRecorder = {
         }
 
         container.innerHTML = this.currentAudios.map(audio => `
-      <div style="background: var(--gray-50); padding: 1rem; border-radius: var(--radius-md); margin-bottom: 0.5rem;">
+      <div style="background: var(--gray-50); padding: 1rem; border-radius: var(--radius-md); margin-bottom: 0.5rem; border: 1px solid var(--gray-200);">
+        
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-          <strong>🎤 ${new Date(audio.timestamp).toLocaleTimeString('pt-BR')}</strong>
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <strong>🎤 Áudio ${new Date(audio.timestamp).toLocaleTimeString('pt-BR')}</strong>
+            ${audio.filename ? `<span style="font-size: 0.75rem; color: var(--gray-500);">(${audio.filename})</span>` : ''}
+          </div>
           <div style="display: flex; gap: 0.5rem;">
-            ${audio.transcription ? `
+             ${!audio.formattedTranscription ? `
             <button id="btn-fmt-${audio.id}" class="btn btn-sm btn-outline" style="font-size: 0.75rem;" onclick="AudioRecorder.formatSavedAudio('${audio.id}')">
               ✨ Formatar
             </button>` : ''}
             <button class="btn btn-sm" style="background: var(--error); color: white;" onclick="AudioRecorder.removeAudio('${audio.id}')">
-              Remover
+              ✖️
             </button>
           </div>
         </div>
-        ${audio.transcription ? `
-          <div style="background: white; padding: 0.75rem; border-radius: var(--radius-sm); font-size: 0.875rem; line-height: 1.5;">
-            ${audio.transcription}
-          </div>
-        ` : '<p style="color: var(--gray-500); font-size: 0.875rem;">Sem transcrição</p>'}
+
+        <!-- Raw Transcription -->
+        <div style="margin-bottom: 0.5rem;">
+            <label style="font-size: 0.75rem; font-weight: bold; color: var(--gray-600); display: block; margin-bottom: 0.25rem;">📝 Transcrição Bruta:</label>
+            <div style="background: white; padding: 0.5rem; border-radius: var(--radius-sm); font-size: 0.85rem; color: var(--gray-700); border: 1px solid var(--gray-200); font-style: italic;">
+                ${audio.transcription || 'Sem transcrição'}
+            </div>
+        </div>
+
+        <!-- Formatted Report Text -->
+        ${audio.formattedTranscription ? `
+        <div style="margin-top: 0.5rem;">
+            <label style="font-size: 0.75rem; font-weight: bold; color: var(--success-700); display: block; margin-bottom: 0.25rem;">✅ Texto para Laudo:</label>
+            <div style="background: var(--success-50); padding: 0.5rem; border-radius: var(--radius-sm); font-size: 0.9rem; color: var(--gray-900); border: 1px solid var(--success-200);">
+                ${audio.formattedTranscription}
+            </div>
+        </div>
+        ` : ''}
+
       </div>
     `).join('');
     },
@@ -467,19 +480,13 @@ const AudioRecorder = {
 const recordBtn = document.getElementById('recordAudioBtn');
 if (recordBtn) {
     recordBtn.addEventListener('click', () => {
-        AudioRecorder.openModal((text) => {
-            const descInput = document.getElementById('roomDescription');
-            if (descInput) {
-                const currentText = descInput.value.trim();
-                // Append text with double newline if there's existing text
-                descInput.value = currentText ? currentText + '\n\n' + text : text;
-
-                // Trigger change event for auto-save and visual feedback
-                descInput.dispatchEvent(new Event('change'));
-                descInput.dispatchEvent(new Event('input'));
-
-                Utils.showNotification('📝 Texto adicionado à descrição', 'success');
-            }
+        // Start a new recording session
+        AudioRecorder.activeAudioId = null; // New recording
+        AudioRecorder.openModal((text, isFormatted) => {
+            // This is called when closing/saving form modal
+            // For a new recording, we might have saved it already in stopRecording
+            console.log('Modal closed', text, isFormatted);
+            AudioRecorder.renderAudios();
         });
     });
 }

@@ -93,21 +93,23 @@ const Report = {
           </span>
         </div>
 
-        ${room.description ? `
+        ${(room.description || (room.audios && room.audios.some(a => a.formattedTranscription))) ? `
           <div style="background: var(--gray-50); padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1rem;">
-            <strong>Descrição:</strong><br>
-            ${room.description}
-          </div>
-        ` : ''}
+            <strong>Descrição Detalhada:</strong>
+            
+            ${room.description ? `
+            <div style="margin-top: 0.5rem; white-space: pre-wrap;">${room.description}</div>
+            ` : ''}
 
-        ${room.audios && room.audios.length > 0 ? `
-          <div style="margin-bottom: 1rem;">
-            <strong>📝 Transcrições de Áudio:</strong>
-            ${room.audios.map(audio => audio.transcription ? `
-              <div style="background: var(--gray-50); padding: 0.75rem; border-radius: var(--radius-sm); margin-top: 0.5rem; font-size: 0.875rem;">
-                ${audio.transcription}
+            ${room.audios && room.audios.length > 0 ? `
+              <div style="margin-top: 1rem; border-top: 1px dashed var(--gray-300); padding-top: 0.5rem;">
+                ${room.audios.map(audio => audio.formattedTranscription ? `
+                  <div style="margin-top: 0.5rem; font-style: italic; color: var(--gray-800);">
+                    " ${audio.formattedTranscription} "
+                  </div>
+                ` : '').join('')}
               </div>
-            ` : '').join('')}
+            ` : ''}
           </div>
         ` : ''}
 
