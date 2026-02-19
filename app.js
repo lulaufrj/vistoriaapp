@@ -348,6 +348,39 @@ document.getElementById('newInspectionBtn').addEventListener('click', () => {
     }
 });
 
+// Finalize Inspection
+document.getElementById('finalizeInspectionBtn').addEventListener('click', () => {
+    if (confirm('Confirma a finalização desta vistoria?\n\nEla será movida para a aba "Finalizadas" e não poderá mais ser editada.')) {
+        const currentId = Storage.getCurrentInspectionId();
+
+        if (currentId) {
+            // Mark as completed in storage
+            Storage.markAsCompleted(currentId);
+
+            // Clear current session ID so it doesn't stay open
+            localStorage.removeItem(Storage.CURRENT_ID_KEY);
+
+            Utils.showNotification('Vistoria finalizada com sucesso!', 'success');
+
+            // Reset UI for next inspection
+            window.AppState = {
+                currentStep: 1,
+                propertyData: {},
+                rooms: []
+            };
+            document.getElementById('propertyForm').reset();
+            Rooms.clearRooms();
+            Wizard.goToStep(1);
+
+            // Open History Modal to show it's done (Optional, but good feedback)
+            // document.getElementById('historyBtn').click();
+            // Actually, let's just show the notification and go to start.
+        } else {
+            Utils.showNotification('Erro: Nenhuma vistoria ativa encontrada.', 'error');
+        }
+    }
+});
+
 // Save Draft Button
 document.getElementById('saveDraftBtn').addEventListener('click', () => {
     // Save property data

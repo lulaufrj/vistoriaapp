@@ -435,249 +435,251 @@
                   <!-- Report preview will be shown here -->
                 </div>
               </div>
-              <div class="card-footer">
-                <button class="btn btn-secondary" id="backToReviewBtn">
-                  ← Voltar
-                </button>
-                <button class="btn btn-success btn-lg" id="downloadPdfBtn">
-                  📥 Download PDF
-                </button>
-                <button class="btn btn-primary" id="newInspectionBtn">
-                  🆕 Nova Vistoria
-                </button>
+              <button class="btn btn-secondary" id="backToReviewBtn">
+                ← Voltar
+              </button>
+              <button class="btn btn-success btn-lg" id="downloadPdfBtn">
+                📥 Download PDF
+              </button>
+              <button class="btn btn-soft-red btn-lg" id="finalizeInspectionBtn">
+                🏁 Finalizar Vistoria
+              </button>
+              <button class="btn btn-primary" id="newInspectionBtn">
+                🆕 Nova Vistoria
+              </button>
+            </div>
+      </div>
+      </section>
+
+      </main>
+
+      <!-- Modal: Add/Edit Room -->
+      <div id="roomModal" class="modal-overlay hidden">
+        <div class="modal">
+          <div class="modal-header">
+            <h3 class="modal-title" id="roomModalTitle">Adicionar Cômodo</h3>
+            <button class="modal-close" id="closeRoomModal">&times;</button>
+          </div>
+          <div class="modal-body">
+            <form id="roomForm">
+
+              <div class="form-group">
+                <label class="form-label required">Tipo de Cômodo</label>
+                <select class="form-select" id="roomType" required>
+                  <option value="">Selecione...</option>
+                  <option value="quarto">🛏️ Quarto</option>
+                  <option value="suite">🛏️ Suíte</option>
+                  <option value="sala">🛋️ Sala</option>
+                  <option value="cozinha">🍳 Cozinha</option>
+                  <option value="banheiro">🚿 Banheiro</option>
+                  <option value="lavabo">🚽 Lavabo</option>
+                  <option value="varanda">🌅 Varanda</option>
+                  <option value="garagem">🚗 Garagem</option>
+                  <option value="area-servico">🧺 Área de Serviço</option>
+                  <option value="escritorio">💼 Escritório</option>
+                  <option value="despensa">📦 Despensa</option>
+                  <option value="outro">📍 Outro</option>
+                </select>
               </div>
+
+              <div class="form-group">
+                <label class="form-label">Nome/Identificação</label>
+                <input type="text" class="form-input" id="roomName" placeholder="Ex: Quarto 1, Sala de Estar">
+                <div class="form-hint">Opcional - para diferenciar cômodos do mesmo tipo</div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label required">Estado de Conservação</label>
+                <select class="form-select" id="roomCondition" required>
+                  <option value="">Selecione...</option>
+                  <option value="excelente">⭐ Excelente</option>
+                  <option value="bom">✅ Bom</option>
+                  <option value="regular">⚠️ Regular</option>
+                  <option value="ruim">❌ Ruim</option>
+                  <option value="pessimo">🚫 Péssimo</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Descrição Detalhada</label>
+                <textarea class="form-textarea" id="roomDescription"
+                  placeholder="Descreva o estado do cômodo, itens presentes, problemas encontrados..."></textarea>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Fotos</label>
+                <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                  <button type="button" class="btn btn-outline" id="takePictureBtn">
+                    📷 Tirar Foto
+                  </button>
+                  <button type="button" class="btn btn-outline" id="uploadPictureBtn">
+                    📁 Upload Foto
+                  </button>
+                </div>
+                <input type="file" id="photoUpload" accept="image/*" multiple style="display: none;">
+                <div id="roomPhotos" class="photo-gallery">
+                  <!-- Photos will be added here -->
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Áudio</label>
+                <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                  <button type="button" class="btn btn-outline" id="recordAudioBtn">
+                    🎤 Gravar Áudio
+                  </button>
+                  <button type="button" class="btn btn-outline" id="uploadAudioBtn">
+                    📁 Upload Áudio
+                  </button>
+                </div>
+                <input type="file" id="audioUpload" accept="audio/*" style="display: none;">
+                <div id="roomAudios">
+                  <!-- Audio transcriptions will be added here -->
+                </div>
+              </div>
+
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" id="cancelRoomBtn">Cancelar</button>
+            <button class="btn btn-primary" id="saveRoomBtn">Salvar Cômodo</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal: Camera -->
+      <div id="cameraModal" class="modal-overlay hidden">
+        <div class="modal">
+          <div class="modal-header">
+            <h3 class="modal-title">Capturar Foto</h3>
+            <button class="modal-close" id="closeCameraModal">&times;</button>
+          </div>
+          <div class="modal-body">
+            <div class="camera-preview">
+              <video id="cameraVideo" autoplay playsinline></video>
+              <canvas id="cameraCanvas" style="display: none;"></canvas>
             </div>
-          </section>
-
-        </main>
-
-        <!-- Modal: Add/Edit Room -->
-        <div id="roomModal" class="modal-overlay hidden">
-          <div class="modal">
-            <div class="modal-header">
-              <h3 class="modal-title" id="roomModalTitle">Adicionar Cômodo</h3>
-              <button class="modal-close" id="closeRoomModal">&times;</button>
-            </div>
-            <div class="modal-body">
-              <form id="roomForm">
-
-                <div class="form-group">
-                  <label class="form-label required">Tipo de Cômodo</label>
-                  <select class="form-select" id="roomType" required>
-                    <option value="">Selecione...</option>
-                    <option value="quarto">🛏️ Quarto</option>
-                    <option value="suite">🛏️ Suíte</option>
-                    <option value="sala">🛋️ Sala</option>
-                    <option value="cozinha">🍳 Cozinha</option>
-                    <option value="banheiro">🚿 Banheiro</option>
-                    <option value="lavabo">🚽 Lavabo</option>
-                    <option value="varanda">🌅 Varanda</option>
-                    <option value="garagem">🚗 Garagem</option>
-                    <option value="area-servico">🧺 Área de Serviço</option>
-                    <option value="escritorio">💼 Escritório</option>
-                    <option value="despensa">📦 Despensa</option>
-                    <option value="outro">📍 Outro</option>
-                  </select>
-                </div>
-
-                <div class="form-group">
-                  <label class="form-label">Nome/Identificação</label>
-                  <input type="text" class="form-input" id="roomName" placeholder="Ex: Quarto 1, Sala de Estar">
-                  <div class="form-hint">Opcional - para diferenciar cômodos do mesmo tipo</div>
-                </div>
-
-                <div class="form-group">
-                  <label class="form-label required">Estado de Conservação</label>
-                  <select class="form-select" id="roomCondition" required>
-                    <option value="">Selecione...</option>
-                    <option value="excelente">⭐ Excelente</option>
-                    <option value="bom">✅ Bom</option>
-                    <option value="regular">⚠️ Regular</option>
-                    <option value="ruim">❌ Ruim</option>
-                    <option value="pessimo">🚫 Péssimo</option>
-                  </select>
-                </div>
-
-                <div class="form-group">
-                  <label class="form-label">Descrição Detalhada</label>
-                  <textarea class="form-textarea" id="roomDescription"
-                    placeholder="Descreva o estado do cômodo, itens presentes, problemas encontrados..."></textarea>
-                </div>
-
-                <div class="form-group">
-                  <label class="form-label">Fotos</label>
-                  <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
-                    <button type="button" class="btn btn-outline" id="takePictureBtn">
-                      📷 Tirar Foto
-                    </button>
-                    <button type="button" class="btn btn-outline" id="uploadPictureBtn">
-                      📁 Upload Foto
-                    </button>
-                  </div>
-                  <input type="file" id="photoUpload" accept="image/*" multiple style="display: none;">
-                  <div id="roomPhotos" class="photo-gallery">
-                    <!-- Photos will be added here -->
-                  </div>
-                </div>
-
-                <div class="form-group">
-                  <label class="form-label">Áudio</label>
-                  <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
-                    <button type="button" class="btn btn-outline" id="recordAudioBtn">
-                      🎤 Gravar Áudio
-                    </button>
-                    <button type="button" class="btn btn-outline" id="uploadAudioBtn">
-                      📁 Upload Áudio
-                    </button>
-                  </div>
-                  <input type="file" id="audioUpload" accept="audio/*" style="display: none;">
-                  <div id="roomAudios">
-                    <!-- Audio transcriptions will be added here -->
-                  </div>
-                </div>
-
-              </form>
-            </div>
-            <div class="modal-footer">
-              <button class="btn btn-secondary" id="cancelRoomBtn">Cancelar</button>
-              <button class="btn btn-primary" id="saveRoomBtn">Salvar Cômodo</button>
+            <div class="camera-controls">
+              <button class="btn btn-secondary" id="cancelCameraBtn">Cancelar</button>
+              <button class="btn btn-primary btn-lg" id="capturePhotoBtn">📸 Capturar</button>
             </div>
           </div>
         </div>
+      </div>
 
-        <!-- Modal: Camera -->
-        <div id="cameraModal" class="modal-overlay hidden">
-          <div class="modal">
-            <div class="modal-header">
-              <h3 class="modal-title">Capturar Foto</h3>
-              <button class="modal-close" id="closeCameraModal">&times;</button>
-            </div>
-            <div class="modal-body">
-              <div class="camera-preview">
-                <video id="cameraVideo" autoplay playsinline></video>
-                <canvas id="cameraCanvas" style="display: none;"></canvas>
-              </div>
-              <div class="camera-controls">
-                <button class="btn btn-secondary" id="cancelCameraBtn">Cancelar</button>
-                <button class="btn btn-primary btn-lg" id="capturePhotoBtn">📸 Capturar</button>
-              </div>
-            </div>
+      <!-- Modal: Audio Recorder -->
+      <div id="audioModal" class="modal-overlay hidden">
+        <div class="modal">
+          <div class="modal-header">
+            <h3 class="modal-title">Gravar Áudio</h3>
+            <button class="modal-close" id="closeAudioModal">&times;</button>
           </div>
-        </div>
-
-        <!-- Modal: Audio Recorder -->
-        <div id="audioModal" class="modal-overlay hidden">
-          <div class="modal">
-            <div class="modal-header">
-              <h3 class="modal-title">Gravar Áudio</h3>
-              <button class="modal-close" id="closeAudioModal">&times;</button>
-            </div>
-            <div class="modal-body">
-              <div class="audio-recorder">
-                <div id="recordingStatus" class="hidden">
-                  <div class="recording-indicator">
-                    <div class="recording-dot"></div>
-                    <span>Gravando... <span id="recordingTime">00:00</span></span>
+          <div class="modal-body">
+            <div class="audio-recorder">
+              <div id="recordingStatus" class="hidden">
+                <div class="recording-indicator">
+                  <div class="recording-dot"></div>
+                  <span>Gravando... <span id="recordingTime">00:00</span></span>
+                </div>
+              </div>
+              <div class="audio-visualizer" id="audioVisualizer">
+                🎤 Pronto para gravar
+              </div>
+              <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 1.5rem;">
+                <button class="btn btn-secondary" id="cancelAudioBtn">Cancelar</button>
+                <button class="btn btn-error" id="startRecordingBtn">⏺️ Iniciar Gravação</button>
+                <button class="btn btn-primary hidden" id="stopRecordingBtn">⏹️ Parar</button>
+              </div>
+              <div id="transcriptionArea" class="hidden" style="margin-top: 1.5rem;">
+                <!-- Stage 1: Raw Transcription -->
+                <div id="rawTranscriptionSection">
+                  <label class="form-label">📝 Transcrição Bruta</label>
+                  <div
+                    style="background: var(--gray-50); padding: 0.75rem; border-radius: var(--radius-sm); margin-bottom: 0.5rem; font-size: 0.875rem; color: var(--gray-700);">
+                    ℹ️ Revise a transcrição e corrija se necessário antes de formatar
                   </div>
+                  <textarea class="form-textarea" id="transcriptionText" placeholder="A transcrição aparecerá aqui..."
+                    style="min-height: 150px;"></textarea>
+                  <button class="btn btn-primary" id="formatTranscriptionBtn" style="margin-top: 1rem; width: 100%;">
+                    ✨ Formatar para Laudo Profissional
+                  </button>
                 </div>
-                <div class="audio-visualizer" id="audioVisualizer">
-                  🎤 Pronto para gravar
-                </div>
-                <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 1.5rem;">
-                  <button class="btn btn-secondary" id="cancelAudioBtn">Cancelar</button>
-                  <button class="btn btn-error" id="startRecordingBtn">⏺️ Iniciar Gravação</button>
-                  <button class="btn btn-primary hidden" id="stopRecordingBtn">⏹️ Parar</button>
-                </div>
-                <div id="transcriptionArea" class="hidden" style="margin-top: 1.5rem;">
-                  <!-- Stage 1: Raw Transcription -->
-                  <div id="rawTranscriptionSection">
-                    <label class="form-label">📝 Transcrição Bruta</label>
-                    <div
-                      style="background: var(--gray-50); padding: 0.75rem; border-radius: var(--radius-sm); margin-bottom: 0.5rem; font-size: 0.875rem; color: var(--gray-700);">
-                      ℹ️ Revise a transcrição e corrija se necessário antes de formatar
-                    </div>
-                    <textarea class="form-textarea" id="transcriptionText" placeholder="A transcrição aparecerá aqui..."
-                      style="min-height: 150px;"></textarea>
-                    <button class="btn btn-primary" id="formatTranscriptionBtn" style="margin-top: 1rem; width: 100%;">
-                      ✨ Formatar para Laudo Profissional
+
+                <!-- Stage 2: Formatted Text (hidden initially) -->
+                <div id="formattedTranscriptionSection" class="hidden" style="margin-top: 1.5rem;">
+                  <label class="form-label">📋 Texto Formatado para Laudo</label>
+                  <div
+                    style="background: var(--success-50); padding: 0.75rem; border-radius: var(--radius-sm); margin-bottom: 0.5rem; font-size: 0.875rem; color: var(--success-700);">
+                    ✅ Texto formatado com pontuação, gramática e linguagem técnica adequadas
+                  </div>
+                  <textarea class="form-textarea" id="formattedText" placeholder="O texto formatado aparecerá aqui..."
+                    style="min-height: 150px;"></textarea>
+
+                  <!-- Choice Buttons -->
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+                    <button class="btn btn-outline" id="useRawTextBtn">
+                      📝 Usar Texto Bruto
+                    </button>
+                    <button class="btn btn-success" id="useFormattedTextBtn">
+                      ✅ Usar Texto Formatado
                     </button>
                   </div>
-
-                  <!-- Stage 2: Formatted Text (hidden initially) -->
-                  <div id="formattedTranscriptionSection" class="hidden" style="margin-top: 1.5rem;">
-                    <label class="form-label">📋 Texto Formatado para Laudo</label>
-                    <div
-                      style="background: var(--success-50); padding: 0.75rem; border-radius: var(--radius-sm); margin-bottom: 0.5rem; font-size: 0.875rem; color: var(--success-700);">
-                      ✅ Texto formatado com pontuação, gramática e linguagem técnica adequadas
-                    </div>
-                    <textarea class="form-textarea" id="formattedText" placeholder="O texto formatado aparecerá aqui..."
-                      style="min-height: 150px;"></textarea>
-
-                    <!-- Choice Buttons -->
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
-                      <button class="btn btn-outline" id="useRawTextBtn">
-                        📝 Usar Texto Bruto
-                      </button>
-                      <button class="btn btn-success" id="useFormattedTextBtn">
-                        ✅ Usar Texto Formatado
-                      </button>
-                    </div>
-                  </div>
                 </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Modal: Inspection History -->
-        <div id="historyModal" class="modal-overlay hidden">
-          <div class="modal modal-lg">
-            <div class="modal-header">
-              <h3 class="modal-title">📋 Histórico de Vistorias</h3>
-              <button class="modal-close" id="closeHistoryModal">&times;</button>
-            </div>
-            <div class="modal-body">
-              <div class="history-tabs">
-                <button class="history-tab active" data-tab="in-progress">
-                  Em Andamento (<span id="inProgressCount">0</span>)
-                </button>
-                <button class="history-tab" data-tab="completed">
-                  Finalizadas (<span id="completedCount">0</span>)
-                </button>
-              </div>
-              <div id="historyContent" class="history-content">
-                <!-- Inspection cards will be rendered here -->
               </div>
             </div>
           </div>
         </div>
+      </div>
 
-        <!-- External Libraries -->
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+      <!-- Modal: Inspection History -->
+      <div id="historyModal" class="modal-overlay hidden">
+        <div class="modal modal-lg">
+          <div class="modal-header">
+            <h3 class="modal-title">📋 Histórico de Vistorias</h3>
+            <button class="modal-close" id="closeHistoryModal">&times;</button>
+          </div>
+          <div class="modal-body">
+            <div class="history-tabs">
+              <button class="history-tab active" data-tab="in-progress">
+                Em Andamento (<span id="inProgressCount">0</span>)
+              </button>
+              <button class="history-tab" data-tab="completed">
+                Finalizadas (<span id="completedCount">0</span>)
+              </button>
+            </div>
+            <div id="historyContent" class="history-content">
+              <!-- Inspection cards will be rendered here -->
+            </div>
+          </div>
+        </div>
+      </div>
 
-        </main> <!-- End Main Content -->
-      </div> <!-- End App Layout -->
-    </div> <!-- End App Container -->
+      <!-- External Libraries -->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+      </main> <!-- End Main Content -->
+    </div> <!-- End App Layout -->
+  </div> <!-- End App Container -->
 
 
 
-    <!-- Application Scripts -->
-    <script src="error-handler.js?v=3"></script>
-    <script src="utils.js?v=2"></script>
-    <script src="cep-autofill.js?v=2"></script>
-    <script src="storage-api.js?v=2"></script>
-    <script src="migration-helper.js?v=2"></script>
-    <script src="storage.js?v=2"></script>
-    <script src="history.js?v=2"></script>
-    <script src="ai-formatter.js?v=2"></script>
-    <script src="camera.js?v=2"></script>
-    <script src="audio.js?v=2"></script>
-    <script src="rooms.js?v=2"></script>
-    <script src="report.js?v=2"></script>
-    <script src="pdf-generator.js?v=2"></script>
-    <script src="auth.js?v=2"></script>
-    <script src="app.js?v=2"></script>
+  <!-- Application Scripts -->
+  <script src="error-handler.js?v=3"></script>
+  <script src="utils.js?v=2"></script>
+  <script src="cep-autofill.js?v=2"></script>
+  <script src="storage-api.js?v=2"></script>
+  <script src="migration-helper.js?v=2"></script>
+  <script src="storage.js?v=2"></script>
+  <script src="history.js?v=2"></script>
+  <script src="ai-formatter.js?v=2"></script>
+  <script src="camera.js?v=2"></script>
+  <script src="audio.js?v=2"></script>
+  <script src="rooms.js?v=2"></script>
+  <script src="report.js?v=2"></script>
+  <script src="pdf-generator.js?v=2"></script>
+  <script src="auth.js?v=2"></script>
+  <script src="app.js?v=2"></script>
 
 </body>
 
