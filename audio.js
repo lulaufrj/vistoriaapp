@@ -31,7 +31,20 @@ const AudioRecorder = {
                 for (let i = event.resultIndex; i < event.results.length; i++) {
                     const transcript = event.results[i][0].transcript;
                     if (event.results[i].isFinal) {
-                        finalTranscript += transcript + ' ';
+                        try {
+                            // Clean the final transcript before adding
+                            let cleanedChunk = transcript;
+                            if (window.AIFormatter && window.AIFormatter.cleanRawText) {
+                                // We keep the space at the end if it existed
+                                const hasTrailingSpace = transcript.endsWith(' ');
+                                cleanedChunk = window.AIFormatter.cleanRawText(transcript);
+                                if (hasTrailingSpace && cleanedChunk) cleanedChunk += ' ';
+                            }
+                            finalTranscript += cleanedChunk;
+                        } catch (e) {
+                            console.warn('Error cleaning text:', e);
+                            finalTranscript += transcript + ' ';
+                        }
                     } else {
                         interimTranscript += transcript;
                     }

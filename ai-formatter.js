@@ -9,6 +9,39 @@ const AIFormatter = {
         : window.location.origin,
 
     /**
+     * Clean raw transcription by removing filler words and sounds
+     */
+    cleanRawText(text) {
+        if (!text) return '';
+
+        // Filler words to remove (case insensitive)
+        const fillers = [
+            /\b(é+|eeee+)\b/gi,         // Long "é" sounds
+            /\b(então\s*)+/gi,          // "então", "então então"
+            /\b(peraí|pera\s*aí)\b/gi,  // "peraí"
+            /\b(tipo\s*assim)\b/gi,     // "tipo assim"
+            /\b(sabe)\b/gi,             // "sabe"
+            /\b(né)\b/gi,               // "né"
+            /\b(aí)\b/gi,               // "aí"
+            /\b(daí)\b/gi,              // "daí"
+            /\b(hum|hmm+)\b/gi,         // "hum", "hmmm"
+            /\b(bom)\b/gi,              // "bom" (context dependent, but often filler at start)
+            /\b(na\s*verdade)\b/gi,     // "na verdade"
+            /\b(ou\s*seja)\b/gi,        // "ou seja"
+        ];
+
+        let cleaned = text;
+
+        // Apply filters
+        fillers.forEach(regex => {
+            cleaned = cleaned.replace(regex, ' ');
+        });
+
+        // Clean up double spaces and trimming
+        return cleaned.replace(/\s+/g, ' ').trim();
+    },
+
+    /**
      * Format informal text to professional inspection report language
      */
     async formatToProfessionalReport(informalText, roomType, roomName) {
