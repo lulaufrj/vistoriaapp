@@ -97,18 +97,18 @@ const Report = {
           <div style="background: var(--gray-50); padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1rem;">
             <strong>Descrição Detalhada:</strong>
             
-            ${room.description ? `
-            <div style="margin-top: 0.5rem; white-space: pre-wrap;">${room.description}</div>
-            ` : ''}
-
             ${room.audios && room.audios.length > 0 ? `
-              <div style="margin-top: 1rem; border-top: 1px dashed var(--gray-300); padding-top: 0.5rem;">
+              <div style="margin-bottom: 1rem; border-bottom: 1px dashed var(--gray-300); padding-bottom: 0.5rem;">
                 ${room.audios.map(audio => audio.formattedTranscription ? `
                   <div style="margin-top: 0.5rem; font-style: italic; color: var(--gray-800);">
                     " ${audio.formattedTranscription} "
                   </div>
                 ` : '').join('')}
               </div>
+            ` : ''}
+
+            ${room.description ? `
+            <div style="margin-top: 0.5rem; white-space: pre-wrap;">${room.description}</div>
             ` : ''}
           </div>
         ` : ''}
@@ -444,13 +444,22 @@ const Report = {
     </div>
   </div>
 
+
+        ${room.audios && room.audios.some(a => a.formattedTranscription) ? `
+          <div class="description" style="margin-bottom: 5px; border-bottom: 1px dashed #ccc;">
+            <strong>Registro em Áudio (Formatado):</strong>
+             ${room.audios.map(audio => audio.formattedTranscription ? `
+                <div style="margin-top: 5px; font-style: italic;">"${audio.formattedTranscription}"</div>
+             ` : '').join('')}
+          </div>
+        ` : ''}
+
         ${room.description ? `
           <div class="description">
-            <strong>Descrição:</strong><br>
+            <strong>Descrição Detalhada:</strong><br>
             ${room.description}
           </div>
-        ` : ''
-      }
+        ` : ''}
 
         ${room.photos && room.photos.length > 0 ? `
           <div>
