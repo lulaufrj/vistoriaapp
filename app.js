@@ -46,6 +46,11 @@ const Wizard = {
 
         // Scroll to top
         window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        // If going to the Report step (Step 3), generate the report content
+        if (stepNumber === 3) {
+            this.generateReport();
+        }
     },
 
     /**
