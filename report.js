@@ -210,17 +210,44 @@ const Report = {
             box-sizing: border-box;
           }
           @media print {
-            body {
-               max-width: 210mm;
-               padding: 20mm;
+            body { 
+                max-width: 100%;
+                margin: 0;
+                padding: 20mm; /* Fixed margin for PDF/Print */
+                -webkit-print-color-adjust: exact;
+            }
+            .header, .footer, .room-section, .info-grid {
+                width: 100%;
+            }
+            .room-section { 
+                page-break-inside: auto; /* Allow breaking for long rooms */
+                margin-bottom: 20px;
+                padding-bottom: 20px;
+                border-bottom: 2px solid #e5e7eb;
+            }
+            .room-header {
+                page-break-after: avoid; /* Keep header with content */
+                page-break-inside: avoid;
+            }
+            .description {
+                page-break-inside: avoid; /* Don't split description paragraph */
+            }
+            .photos-grid {
+                page-break-inside: auto;
+            }
+            .photo-item {
+                page-break-inside: avoid; /* Don't split individual photos */
+                break-inside: avoid;
+                position: relative;
+                display: inline-block;
+                width: 100%;
             }
           }
-          .header {
-            text-align: center;
-            border-bottom: 3px solid #2563eb;
-            padding-bottom: 20px;
-            margin-bottom: 30px;
+          /* ... (rest of styles) ... */
+          .photos-grid img {
+             /* ... */
           }
+
           .header h1 {
             color: #2563eb;
             margin: 0 0 10px 0;
@@ -422,38 +449,36 @@ const Report = {
 
     return `
       <div class="room-section">
-  <div class="room-header">
-    <div class="room-title">
-      ${number}. ${displayName}
-    </div>
-    <div class="condition-badge condition-${room.condition}">
-      ${Utils.getConditionLabel(room.condition)}
-    </div>
-  </div>
-
+        <div class="room-header">
+            <div class="room-title">
+            ${number}. ${displayName}
+            </div>
+            <div class="condition-badge condition-${room.condition}">
+            ${Utils.getConditionLabel(room.condition)}
+            </div>
+        </div>
 
         ${room.description ? `
           <div class="description">
             <strong>Descrição Detalhada:</strong><br>
-            ${room.description}
+            <span style="white-space: pre-wrap;">${room.description}</span>
           </div>
         ` : ''}
 
         ${room.photos && room.photos.length > 0 ? `
-          <div>
-            <strong>Registro Fotográfico (${room.photos.length} foto(s)):</strong>
+          <div style="margin-top: 15px;">
+            <strong style="display: block; margin-bottom: 10px; page-break-after: avoid;">Registro Fotográfico (${room.photos.length} foto(s)):</strong>
             <div class="photos-grid">
               ${room.photos.map(photo => `
-                <div style="position: relative;">
-                    <img src="${photo.url || photo.data}" alt="Foto do cômodo" style="width: 100%; border-radius: 4px; border: 1px solid #e5e7eb;">
+                <div class="photo-item">
+                    <img src="${photo.url || photo.data}" alt="Foto do cômodo" style="width: 100%; border-radius: 4px; border: 1px solid #e5e7eb; display: block;">
                 </div>
               `).join('')}
             </div>
           </div>
-        ` : ''
-      }
-      </div >
-  `;
+        ` : ''}
+      </div>
+    `;
   },
 
   /**
