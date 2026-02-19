@@ -491,8 +491,52 @@ document.getElementById('uploadAudioBtn').addEventListener('click', () => {
 document.getElementById('audioUpload').addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (file) {
-        await AudioRecorder.saveAudio(file, '');
-        Utils.showNotification('Áudio carregado (transcrição manual necessária)', 'info');
+        // Show loading state
+        Utils.showNotification('⬆️ Enviando áudio...', 'info');
+
+        try {
+            const base64 = await Utils.fileToBase64(file);
+
+            // 1. Transcribe (Server-Side)
+            Utils.showNotification('🎧 Transcrevendo áudio com IA...', 'info');
+
+            const API_URL = window.location.hostname === 'localhost'
+                ? 'http://localhost:3001'
+                : window.location.origin;
+
+            const response = await fetch(`${API_URL}/api/transcribe`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ audio: base64 })
+            });
+
+            const data = await response.json();
+
+            if (!data.success) throw new Error(data.error || 'Falha na transcrição');
+
+            const transcription = data.transcription;
+
+            // 2. Save Audio with Transcription
+            await AudioRecorder.saveAudio(file, transcription);
+
+            // 3. Open Modal to allow formatting (Optional but good UX)
+            AudioRecorder.openModal((text) => {
+                const descInput = document.getElementById('roomDescription');
+                if (descInput) {
+                    descInput.value = descInput.value ? descInput.value + '\n\n' + text : text;
+                    descInput.dispatchEvent(new Event('change'));
+                }
+            });
+
+            // Populate modal with transcribed text
+            document.getElementById('transcriptionText').value = transcription;
+            Utils.showNotification('✅ Áudio transcrito com sucesso!', 'success');
+
+        } catch (err) {
+            console.error('Upload Error:', err);
+            await AudioRecorder.saveAudio(file, ''); // Save without transcription as fallback
+            Utils.showNotification('⚠️ Erro na transcrição. Áudio salvo sem texto.', 'warning');
+        }
     }
     e.target.value = '';
 });

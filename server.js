@@ -539,6 +539,32 @@ app.post('/api/format-audio', async (req, res) => {
 });
 
 /**
+ * Transcribe Audio (New Endpoint for Uploads)
+ */
+app.post('/api/transcribe', async (req, res) => {
+    try {
+        const { audio } = req.body;
+
+        if (!audio) {
+            return res.status(400).json({ error: 'Audio file is required' });
+        }
+
+        const apiKey = process.env.GEMINI_API_KEY;
+        if (!apiKey) {
+            return res.status(503).json({ error: 'AI Service Unavailable (API Key missing)' });
+        }
+
+        const transcription = await transcribeAudioWithGemini(audio, apiKey);
+
+        res.json({ success: true, transcription });
+
+    } catch (error) {
+        console.error('Transcription error:', error);
+        res.status(500).json({ success: false, error: 'Failed to transcribe audio' });
+    }
+});
+
+/**
  * Health check endpoint
  */
 app.get('/api/health', (req, res) => {
@@ -680,6 +706,58 @@ async function formatAudioWithGemini(transcription, apiKey) {
     // Log the full response to understand why it's empty
     console.error('❌ Empty response from Gemini:', JSON.stringify(data, null, 2));
     throw new Error('Invalid API response format');
+}
+
+/**
+ * Transcribe audio using Gemini API
+ */
+async function transcribeAudioWithGemini(audioBase64, apiKey) {
+    console.log('📤 Sending audio to Gemini for transcription...');
+
+    // Clean base64 if needed (remove data:audio/type;base64, prefix)
+    const base64Data = audioBase64.replace(/^data:audio\/[a-z0-9]+;base64,/, '');
+
+    const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+        {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                contents: [{
+                    parts: [
+                        { text: "Transcreva este áudio fielmente. Apenas o texto falado, sem marcações de tempo ou alto-falantes." },
+                        {
+                            inline_data: {
+                                mime_type: "audio/ogg",
+                                data: base64Data
+                            }
+                        }
+                    ]
+                }],
+                generationConfig: {
+                    temperature: 0.4,
+                    maxOutputTokens: 2048,
+                }
+            })
+        }
+    );
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ Gemini API error (Transcription):', response.status, errorText);
+        throw new Error(`Gemini API error: ${JSON.stringify(errorText)}`);
+    }
+
+    const data = await response.json();
+    console.log('📥 Gemini transcription response received');
+
+    if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
+        return data.candidates[0].content.parts[0].text.trim();
+    }
+
+    throw new Error('No transcription generated');
 }
 
 function buildAudioPrompt(transcription) {
