@@ -290,9 +290,21 @@ const Storage = {
             const filtered = inspections.filter(i => i.id !== id);
             localStorage.setItem(this.getStorageKey(), JSON.stringify(filtered));
 
-            // If deleting current inspection, clear current ID
+            // If deleting current inspection, clear current ID and AppState
             if (this.getCurrentInspectionId() === id) {
                 localStorage.removeItem(this.CURRENT_ID_KEY);
+
+                // Clear in-memory state to prevent "resurrection" by auto-save
+                if (window.AppState) {
+                    window.AppState.propertyData = {};
+                    window.AppState.rooms = [];
+                    window.AppState.currentStep = 1;
+                }
+
+                // If Rooms module exists, clear it too
+                if (typeof Rooms !== 'undefined' && Rooms.clearRooms) {
+                    Rooms.clearRooms();
+                }
             }
 
             console.log('Inspection deleted locally:', id);
@@ -413,8 +425,56 @@ const Storage = {
         } catch (error) {
             console.error('Error migrating old draft:', error);
         }
+    },
+
+    /**
+     * Cleanup Base64 data from existing inspections to free up space
+     * This is a maintenance function to fix "Quota Exceeded" issues
+     */
+    cleanupBase64Data() {
+        try {
+            const inspections = this.getAllInspections();
+            let spaceFreed = 0;
+            let modifications = 0;
+
+            inspections.forEach(inspection => {
+                if (inspection.rooms) {
+                    inspection.rooms.forEach(room => {
+                        if (room.photos) {
+                            room.photos.forEach(photo => {
+                                // If we have a URL and also have Base64 data, remove the Base64 data
+                                if (photo.url && photo.data && photo.data.length > 100) {
+                                    spaceFreed += photo.data.length;
+                                    photo.data = null;
+                                    modifications++;
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+
+            if (modifications > 0) {
+                console.log(`🧹 Storage Cleanup: Removed ${modifications} Base64 images, freeing ~${Math.round(spaceFreed / 1024)}KB`);
+                localStorage.setItem(this.getStorageKey(), JSON.stringify(inspections));
+                Utils.showNotification(`Otimização: Liberado espaço de ${Math.round(spaceFreed / 1024)}KB`, 'info');
+            }
+        } catch (error) {
+            console.error('Error cleaning up Base64 data:', error);
+        }
     }
 };
 
-// Migrate old data on load
-Storage.migrateOldDraft();
+// Initialize Storage safely
+try {
+    // 1. Migrate old drafts
+    if (Storage && Storage.migrateOldDraft) {
+        Storage.migrateOldDraft();
+    }
+    // 2. Cleanup space
+    if (Storage && Storage.cleanupBase64Data) {
+        setTimeout(() => Storage.cleanupBase64Data(), 2000);
+    }
+} catch (e) {
+    console.error('CRITICAL: Storage initialization failed', e);
+}

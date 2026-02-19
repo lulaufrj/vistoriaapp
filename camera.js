@@ -124,7 +124,9 @@ const Camera = {
 
             const photo = {
                 id: Utils.generateId(),
-                url: result.url, // Cloudinary URL instead of Base64
+                url: result.url, // Cloudinary URL
+                // data: base64, // REMOVED: Do not save Base64 to LocalStorage to prevent quota exceeded errors
+                data: null, // Explicitly null to indicate no local data
                 publicId: result.publicId, // For deletion
                 filename: file.name,
                 timestamp: new Date().toISOString()

@@ -52,27 +52,46 @@ const Wizard = {
      * Validate and go to next step
      */
     nextStep() {
-        const currentStep = window.AppState.currentStep;
+        try {
+            console.log('Wizard.nextStep called', window.AppState.currentStep);
+            const currentStep = window.AppState.currentStep;
 
-        if (currentStep === 1) {
-            // Validate property form
-            if (!this.validatePropertyForm()) {
-                Utils.showNotification('Preencha todos os campos obrigatórios', 'error');
-                return;
+            if (currentStep === 1) {
+                // Validate property form
+                if (!this.validatePropertyForm()) {
+                    console.warn('Authentication failed: Missing required fields');
+                    // Ensure notification is shown
+                    if (window.Utils && Utils.showNotification) {
+                        Utils.showNotification('Preencha os campos obrigatórios (marcados em vermelho)', 'error');
+                    } else {
+                        alert('Preencha os campos obrigatórios!');
+                    }
+
+                    // Scroll to first invalid field
+                    const invalid = document.querySelector('.form-input[style*="border-color"]');
+                    if (invalid) invalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    return;
+                }
+
+                console.log('Form valid, saving data...');
+                this.savePropertyData();
+                console.log('Data saved, moving to step 2');
+                this.goToStep(2); // Go to rooms step
+            } else if (currentStep === 2) {
+                // Temporarily disabled room validation for testing
+                // if (Rooms.getRooms().length === 0) {
+                //     Utils.showNotification('Adicione pelo menos um cômodo antes de continuar', 'warning');
+                //     return;
+                // }
+                this.goToStep(3); // Go to review
+                this.showReview();
+            } else if (currentStep === 3) {
+                this.goToStep(4); // Go to report
+                this.generateReport();
             }
-            this.savePropertyData();
-            this.goToStep(2); // Go to rooms step
-        } else if (currentStep === 2) {
-            // Temporarily disabled room validation for testing
-            // if (Rooms.getRooms().length === 0) {
-            //     Utils.showNotification('Adicione pelo menos um cômodo antes de continuar', 'warning');
-            //     return;
-            // }
-            this.goToStep(3); // Go to review
-            this.showReview();
-        } else if (currentStep === 3) {
-            this.goToStep(4); // Go to report
-            this.generateReport();
+        } catch (error) {
+            console.error('Error in nextStep:', error);
+            alert('Erro ao avançar: ' + error.message);
         }
     },
 
@@ -211,6 +230,38 @@ const Wizard = {
      */
     generateReport() {
         Report.showReportPreview(window.AppState.propertyData, Rooms.getRooms());
+    },
+
+    /**
+     * Delete current inspection (New Feature)
+     */
+    deleteCurrentInspection() {
+        const currentId = Storage.getCurrentInspectionId();
+        if (!currentId) {
+            Utils.showNotification('Nenhuma vistoria ativa para deletar', 'warning');
+            return;
+        }
+
+        if (confirm('⚠️ ATENÇÃO: Deseja realmente excluir TODA a vistoria atual?\n\nIsso apagará:\n- Todos os dados do imóvel\n- Todos os cômodos e fotos\n\nEsta ação NÃO pode ser desfeita.')) {
+            // Delete from storage (and clear AppState internally via Storage.deleteInspection update)
+            Storage.deleteInspection(currentId);
+
+            // Explicitly reset UI
+            document.getElementById('propertyForm').reset();
+            Rooms.clearRooms();
+
+            // Reset AppState just in case
+            window.AppState = {
+                currentStep: 1,
+                propertyData: {},
+                rooms: []
+            };
+
+            // Go to start
+            this.goToStep(1);
+
+            Utils.showNotification('Vistoria excluída com sucesso!', 'success');
+        }
     }
 };
 
@@ -218,10 +269,32 @@ const Wizard = {
 // Event Listeners
 // ============================================
 
+// ============================================
+// Event Listeners
+// ============================================
+
 // Navigation buttons
-document.getElementById('nextToRoomsBtn').addEventListener('click', () => {
-    Wizard.nextStep();
-});
+const nextToRoomsBtn = document.getElementById('nextToRoomsBtn');
+if (nextToRoomsBtn) {
+    nextToRoomsBtn.addEventListener('click', (e) => {
+        try {
+            e.preventDefault(); // Prevent default form submission if any
+            console.log('Next to Rooms clicked');
+
+            if (typeof Wizard !== 'undefined' && Wizard.nextStep) {
+                Wizard.nextStep();
+            } else {
+                console.error('Wizard is not defined!');
+                alert('Erro crítico: O módulo "Wizard" não foi carregado corretamente. Recarregue a página.');
+            }
+        } catch (err) {
+            console.error('Error in click handler:', err);
+            alert('Erro ao clicar: ' + err.message);
+        }
+    });
+} else {
+    console.error('CRITICAL: Button "nextToRoomsBtn" not found in DOM!');
+}
 
 document.getElementById('backToPropertyBtn').addEventListener('click', () => {
     Wizard.previousStep();
@@ -327,38 +400,31 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize auto-save
     Storage.initAutoSave();
 
-    // Check for current inspection or create new one
-    let currentId = Storage.getCurrentInspectionId();
-
-    if (!currentId) {
-        // No current inspection - Do NOT create one automatically.
-        // Wait for user interaction or create a temporary draft in memory.
-        console.log('No active inspection. Waiting for user action.');
-        // Optionally reset UI to "Welcome" state or empty form
-    } else {
-        // Load current inspection
-        const inspection = Storage.getInspection(currentId);
-        if (inspection) {
-            console.log('Loading current inspection:', currentId);
-
-            // Load data into app state
-            window.AppState.propertyData = inspection.propertyData;
-            window.AppState.rooms = inspection.rooms;
-            window.AppState.currentStep = inspection.currentStep;
-
-            // Populate property form
-            Wizard.populateForm(inspection.propertyData);
-
-            // Load rooms
-            if (inspection.rooms && inspection.rooms.length > 0) {
-                Rooms.setRooms(inspection.rooms);
-            }
-        } else {
-            // Inspection not found, create new one
-            currentId = Storage.createNewInspection();
-            console.log('Inspection not found, created new:', currentId);
-        }
+    // FORCE FRESH START (User Request)
+    // Clear the current inspection ID so the form always starts empty
+    // The previous inspection remains in history (localStorage) but is not loaded.
+    console.log('🔄 Starting fresh session (clearing current ID)');
+    if (localStorage.getItem(Storage.CURRENT_ID_KEY)) {
+        localStorage.removeItem(Storage.CURRENT_ID_KEY);
     }
+
+    // Reset AppState to be sure
+    window.AppState = {
+        currentStep: 1,
+        propertyData: {},
+        rooms: []
+    };
+
+    // Reset forms explicitly
+    if (document.getElementById('propertyForm')) {
+        document.getElementById('propertyForm').reset();
+    }
+
+    // Ensure we are on Step 1
+    Wizard.goToStep(1);
+
+    // Note: We do NOT load any inspection. 
+    // A new one will be created automatically when the user starts typing/saving via auto-save logic.
 
     // Set default values
     document.getElementById('kitchens').value = 1;
@@ -388,3 +454,14 @@ window.VistoriaApp = {
 };
 
 console.log('VistoriaApp modules loaded. Access via window.VistoriaApp');
+
+// Final Safety Check
+window.addEventListener('load', () => {
+    // Check if Wizard is accessible
+    if (typeof Wizard === 'undefined') {
+        console.error('CRITICAL: Wizard module failed to load.');
+        alert('Erro Crítico: O sistema não foi carregado completamente. Verifique o console para mais detalhes.');
+    } else {
+        console.log('✅ App loaded successfully');
+    }
+});

@@ -10,6 +10,7 @@ const AudioRecorder = {
     timerInterval: null,
     recognition: null,
     currentTranscription: '',
+    isStopping: false, // Flag to prevent auto-restart
 
     /**
      * Initialize speech recognition
@@ -48,11 +49,11 @@ const AudioRecorder = {
 
                 // Handle specific errors
                 if (event.error === 'no-speech') {
-                    // Silently handle no-speech errors and restart
-                    if (this.mediaRecorder && this.mediaRecorder.state === 'recording') {
+                    // Silently handle no-speech errors and restart ONLY if not stopping
+                    if (this.mediaRecorder && this.mediaRecorder.state === 'recording' && !this.isStopping) {
                         console.log('No speech detected, restarting recognition...');
                         setTimeout(() => {
-                            if (this.mediaRecorder && this.mediaRecorder.state === 'recording') {
+                            if (this.mediaRecorder && this.mediaRecorder.state === 'recording' && !this.isStopping) {
                                 try {
                                     this.recognition.start();
                                 } catch (e) {
@@ -65,13 +66,15 @@ const AudioRecorder = {
                 }
 
                 if (event.error === 'aborted') {
-                    // Restart if aborted during recording
-                    if (this.mediaRecorder && this.mediaRecorder.state === 'recording') {
+                    // Restart if aborted during recording, but NOT if stopping
+                    if (this.mediaRecorder && this.mediaRecorder.state === 'recording' && !this.isStopping) {
                         setTimeout(() => {
-                            try {
-                                this.recognition.start();
-                            } catch (e) {
-                                console.log('Recognition already started');
+                            if (!this.isStopping) {
+                                try {
+                                    this.recognition.start();
+                                } catch (e) {
+                                    console.log('Recognition already started');
+                                }
                             }
                         }, 100);
                     }
@@ -90,14 +93,16 @@ const AudioRecorder = {
                     transcriptionText.value = this.currentTranscription;
                 }
 
-                // Auto-restart if still recording (for long recordings)
-                if (this.mediaRecorder && this.mediaRecorder.state === 'recording') {
+                // Auto-restart if still recording (for long recordings) AND NOT STOPPING
+                if (this.mediaRecorder && this.mediaRecorder.state === 'recording' && !this.isStopping) {
                     console.log('Recording still active, restarting recognition for continuous transcription...');
                     setTimeout(() => {
-                        try {
-                            this.recognition.start();
-                        } catch (error) {
-                            console.log('Could not restart recognition:', error.message);
+                        if (!this.isStopping) {
+                            try {
+                                this.recognition.start();
+                            } catch (error) {
+                                console.log('Could not restart recognition:', error.message);
+                            }
                         }
                     }, 100);
                 }
@@ -115,18 +120,23 @@ const AudioRecorder = {
      */
     async startRecording() {
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            const stream = await navigator.mediaDevices.getUserMedia({
+                audio: true
+            });
 
             this.mediaRecorder = new MediaRecorder(stream);
             this.audioChunks = [];
             this.currentTranscription = '';
+            this.isStopping = false; // Reset stop flag
 
             this.mediaRecorder.ondataavailable = (event) => {
                 this.audioChunks.push(event.data);
             };
 
             this.mediaRecorder.onstop = async () => {
-                const audioBlob = new Blob(this.audioChunks, { type: 'audio/webm' });
+                const audioBlob = new Blob(this.audioChunks, {
+                    type: 'audio/webm'
+                });
                 const audioFile = new File([audioBlob], `audio-${Date.now()}.webm`, {
                     type: 'audio/webm',
                     lastModified: Date.now()
@@ -145,7 +155,11 @@ const AudioRecorder = {
 
             // Start speech recognition
             if (this.recognition) {
-                this.recognition.start();
+                try {
+                    this.recognition.start();
+                } catch (e) {
+                    console.error('Error starting recognition:', e);
+                }
             }
 
             // Update UI
@@ -166,6 +180,9 @@ const AudioRecorder = {
      */
     stopRecording() {
         if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
+            // Signal that we are stopping to prevent auto-restart
+            this.isStopping = true;
+
             // Stop speech recognition first and wait for final results
             if (this.recognition) {
                 try {

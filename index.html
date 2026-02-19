@@ -140,6 +140,12 @@
             <span>Histórico</span>
           </button>
 
+          <button class="nav-item nav-item-danger" id="deleteCurrentBtn"
+            onclick="VistoriaApp.Wizard.deleteCurrentInspection()" style="margin-top: 0.5rem; color: #ef4444;">
+            <span class="nav-icon">🗑️</span>
+            <span>Excluir Atual</span>
+          </button>
+
           <div class="nav-spacer"></div>
 
           <button onclick="Auth.logout()" class="nav-item nav-item-danger">
@@ -657,20 +663,21 @@
 
 
     <!-- Application Scripts -->
-    <script src="utils.js"></script>
-    <script src="cep-autofill.js"></script>
-    <script src="storage-api.js"></script>
-    <script src="migration-helper.js"></script>
-    <script src="storage.js"></script>
-    <script src="history.js"></script>
-    <script src="ai-formatter.js"></script>
-    <script src="camera.js"></script>
-    <script src="audio.js"></script>
-    <script src="rooms.js"></script>
-    <script src="report.js"></script>
-    <script src="pdf-generator.js"></script>
-    <script src="auth.js"></script>
-    <script src="app.js"></script>
+    <script src="error-handler.js?v=3"></script>
+    <script src="utils.js?v=2"></script>
+    <script src="cep-autofill.js?v=2"></script>
+    <script src="storage-api.js?v=2"></script>
+    <script src="migration-helper.js?v=2"></script>
+    <script src="storage.js?v=2"></script>
+    <script src="history.js?v=2"></script>
+    <script src="ai-formatter.js?v=2"></script>
+    <script src="camera.js?v=2"></script>
+    <script src="audio.js?v=2"></script>
+    <script src="rooms.js?v=2"></script>
+    <script src="report.js?v=2"></script>
+    <script src="pdf-generator.js?v=2"></script>
+    <script src="auth.js?v=2"></script>
+    <script src="app.js?v=2"></script>
 
 </body>
 
