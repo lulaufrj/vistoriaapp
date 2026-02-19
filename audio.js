@@ -609,12 +609,20 @@ document.getElementById('audioUpload').addEventListener('change', async (e) => {
             await AudioRecorder.saveAudio(file, transcription);
 
             // 3. Open Modal to allow formatting (Optional but good UX)
-            AudioRecorder.openModal((text) => {
-                const descInput = document.getElementById('roomDescription');
-                if (descInput) {
-                    descInput.value = descInput.value ? descInput.value + '\n\n' + text : text;
-                    descInput.dispatchEvent(new Event('change'));
+            AudioRecorder.openModal((text, isFormatted) => {
+                // Determine if we should use raw or formatted text
+                const finalText = isFormatted
+                    ? document.getElementById('formattedText').value
+                    : document.getElementById('transcriptionText').value;
+
+                // Add to description using the helper if available
+                if (finalText && callback) {
+                    // Since we don't have a direct callback here that handles 'addToDescription'
+                    // We rely on the user clicking "Add" buttons in the list.
+                    // But if they click "Use Text" from the modal...
+                    AudioRecorder.toggleTextInDescription(finalText);
                 }
+                AudioRecorder.renderAudios();
             });
 
             // Populate modal with transcribed text

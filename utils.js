@@ -85,6 +85,21 @@ const Utils = {
     },
 
     /**
+     * Escape HTML special characters to prevent XSS
+     */
+    escapeHtml(text) {
+        if (!text) return '';
+        const map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        };
+        return text.replace(/[&<>"']/g, (m) => map[m]);
+    },
+
+    /**
      * Convert base64 to blob
      */
     base64ToBlob(base64) {
