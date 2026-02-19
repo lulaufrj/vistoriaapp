@@ -595,27 +595,25 @@ async function formatWithGemini(text, roomType, roomName, apiKey) {
 function buildPrompt(text, roomType, roomName) {
     const roomLabel = roomName || getRoomTypeLabel(roomType);
 
-    return `Você é um especialista em laudos técnicos de vistoria imobiliária. Sua tarefa é transformar a descrição informal abaixo em um texto formal e técnico adequado para um laudo de vistoria profissional.
+    return `Você é um redator técnico especializado em vistorias imobiliárias.
+Sua tarefa é transformar anotações informais em um parágrafo técnico, coeso e bem estruturado para um laudo oficial.
 
-CÔMODO: ${roomLabel}
+CONTEXTO:
+Ambiente: ${roomLabel}
+Descrição Original: "${text}"
 
-DESCRIÇÃO INFORMAL:
-"${text}"
+REGRAS DE REDAÇÃO:
+1. Comece com "O ambiente apresenta...", "Verifica-se...", "Observa-se..." ou similar.
+2. Use linguagem formal e culta (Norma Padrão da Língua Portuguesa).
+3. Transforme listas soltas em frases conectadas (ex: "parede suja rodapé quebrado" -> "As paredes apresentam sujidade, enquanto o rodapé encontra-se avariado.").
+4. Se houver poucos detalhes, seja direto mas formal.
+5. Se houver itens quebrados/danificados, use termos como "avariado", "danificado", "em mau estado de conservação".
+6. Se houver itens novos/bons, use "em bom estado", "íntegro", "sem avarias aparentes".
+7. NÃO invente informações não presentes no texto original.
+8. NÃO coloque títulos, cabeçalhos ou assinaturas. Apenas o parágrafo descritivo.
 
-INSTRUÇÕES:
-1. Use linguagem técnica e formal, adequada para documentos jurídicos
-2. Organize as informações de forma estruturada e clara
-3. Use termos técnicos quando apropriado (ex: "confeccionado em", "instalado de forma adequada", "apresenta condições gerais de uso")
-4. Seja objetivo e descritivo
-5. Mencione quantidades de forma extensa quando relevante (ex: "12 (doze) tomadas")
-6. Classifique problemas de forma técnica (ex: "avaria pontual", "dano localizado", "comprometimento estrutural")
-7. Mantenha tom neutro e imparcial
-8. Organize em parágrafos curtos e coesos
-9. Finalize com uma avaliação geral do estado
-10. NÃO inclua saudações, títulos ou assinaturas - apenas o corpo do texto descritivo
-
-FORMATO DE SAÍDA:
-Retorne APENAS o texto formatado do laudo, sem nenhum texto adicional, explicação ou marcação.`;
+EXEMPLO DE SAÍDA:
+"O ambiente apresenta piso cerâmico em bom estado, porém com leve desgaste próximo à porta. As paredes possuem pintura nova na cor branca, sem manchas aparentes. Observa-se a ausência de luminária central."`;
 }
 
 async function formatAudioWithGemini(transcription, apiKey) {

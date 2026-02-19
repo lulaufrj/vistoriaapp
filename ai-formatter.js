@@ -220,57 +220,101 @@ const AIFormatter = {
      */
     clientSideFallback(text, roomType, roomName) {
         const roomLabel = roomName || this.getRoomTypeLabel(roomType);
+        let content = text.trim();
 
-        let formatted = text.trim();
+        if (!content) return '';
 
-        // Replace informal terms with formal ones
-        const replacements = {
-            'tá': 'está',
-            'ta': 'está',
-            'tem': 'há',
-            'tem um': 'observa-se',
-            'tem uma': 'observa-se',
-            'quebrado': 'avariado',
-            'quebradinho': 'com pequeno dano',
-            'funcionando': 'em funcionamento',
-            'funcionando direitinho': 'em pleno funcionamento',
-            'não sei': 'não confirmado',
-            'acho que': 'aparentemente',
-            'eu acho': 'aparentemente',
-            'pode fazer': '',
-            'por favor': '',
-            'pra mim': '',
-            'laudo imobiliário': '',
-            'vistoria': ''
+        // 1. Dictionary of terms to help structure the sentence
+        const keywords = {
+            'parede': 'As paredes apresentam',
+            'piso': 'O piso encontra-se',
+            'teto': 'O teto possui',
+            'porta': 'A porta está',
+            'janela': 'A janela encontra-se',
+            'vidro': 'Os vidros estão',
+            'pintura': 'A pintura apresenta-se',
+            'iluminação': 'A iluminação conta com',
+            'luminária': 'A luminária está',
+            'tomada': 'As tomadas estão',
+            'interruptor': 'Os interruptores estão',
+            'rodapé': 'O rodapé encontra-se',
+            'cortina': 'A cortina está',
+            'persiana': 'A persiana encontra-se',
+            'ar': 'O ar condicionado está',
+            'ventilador': 'O ventilador encontra-se',
+            'armário': 'O armário apresenta',
+            'gaveta': 'As gavetas estão',
+            'prateleira': 'As prateleiras estão',
+            'espelho': 'O espelho encontra-se',
+            'box': 'O box está',
+            'pia': 'A pia encontra-se',
+            'torneira': 'A torneira está',
+            'vaso': 'O vaso sanitário está',
+            'chuveiro': 'O chuveiro encontra-se',
+            'cama': 'A cama está',
+            'colchão': 'O colchão encontra-se',
+            'mesa': 'A mesa está',
+            'cadeira': 'As cadeiras estão',
+            'sofá': 'O sofá encontra-se',
+            'tapete': 'O tapete está',
+            'rack': 'O rack encontra-se',
+            'painel': 'O painel está',
+            'tv': 'A televisão encontra-se',
+            'geladeira': 'A geladeira está',
+            'fogão': 'O fogão encontra-se',
+            'microondas': 'O microondas está',
+            'micro-ondas': 'O micro-ondas está',
+            'máquina': 'A máquina de lavar está',
+            'tanque': 'O tanque encontra-se'
         };
 
-        Object.entries(replacements).forEach(([informal, formal]) => {
-            const regex = new RegExp(informal, 'gi');
-            formatted = formatted.replace(regex, formal);
+        // 2. Pre-processing: Common corrections
+        content = content
+            .replace(/\b(ta|tá)\b/gi, 'está')
+            .replace(/\b(tem)\b/gi, 'possui')
+            .replace(/\b(quebrado)\b/gi, 'avariado')
+            .replace(/\b(ruim)\b/gi, 'em mau estado')
+            .replace(/\b(bom)\b/gi, 'em bom estado')
+            .replace(/\b(ok)\b/gi, 'em ordem')
+            .replace(/\b(sujo)\b/gi, 'com sujidade')
+            .replace(/\b(limpo)\b/gi, 'higienizado')
+            .replace(/\s+/g, ' ');
+
+        // 3. Construct the sentence
+        // If the text looks like a list ("item estado item estado"), try to punctuate it
+        let formedSentence = '';
+
+        // Split by known keywords to inject punctuation if missing
+        const words = content.split(' ');
+        let currentSegment = [];
+
+        words.forEach((word, index) => {
+            const lowerWord = word.toLowerCase();
+            // If word is a keyword and it's not the start of the text, maybe start a new clause
+            if (keywords[lowerWord] && index > 0) {
+                if (currentSegment.length > 0) {
+                    formedSentence += currentSegment.join(' ') + ', ';
+                    currentSegment = [];
+                }
+            }
+            currentSegment.push(word);
         });
+        formedSentence += currentSegment.join(' ');
 
-        // Add formal introduction
-        let result = `No ambiente vistoriado (${roomLabel}), `;
+        // 4. Final Polish
+        // Start with capital letter
+        formedSentence = formedSentence.charAt(0).toUpperCase() + formedSentence.slice(1);
 
-        formatted = formatted
-            .replace(/\s+/g, ' ')
-            .replace(/,\s*,/g, ',')
-            .replace(/\.\s*\./g, '.')
-            .trim();
+        // Ensure it ends with a period
+        if (!formedSentence.endsWith('.')) formedSentence += '.';
 
-        if (formatted.length > 0) {
-            formatted = formatted.charAt(0).toLowerCase() + formatted.slice(1);
+        // 5. Wrap in professional context
+        // If the sentence is extremely short or just a list, prepend context
+        if (formedSentence.length < 50 && !formedSentence.includes('O ambiente')) {
+            return `No ambiente ${roomLabel}, observa-se: ${formedSentence}`;
         }
 
-        result += formatted;
-
-        if (!result.endsWith('.')) {
-            result += '.';
-        }
-
-        result += '\n\nDe modo geral, o ambiente encontra-se em condições adequadas de uso, ressalvadas as observações mencionadas.';
-
-        return result;
+        return `Referente ao ambiente ${roomLabel}: ${formedSentence}`;
     },
 
     /**

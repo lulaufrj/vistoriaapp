@@ -545,10 +545,31 @@ try {
     if (Storage && Storage.migrateOldDraft) {
         Storage.migrateOldDraft();
     }
+
     // 2. Cleanup space
     if (Storage && Storage.cleanupBase64Data) {
         setTimeout(() => Storage.cleanupBase64Data(), 2000);
     }
+
+    // 3. Ghost Buster: Force remove any inspections that should be deleted
+    // This fixes the "Resurrection" bug where an inspection reappears after deletion
+    setTimeout(() => {
+        try {
+            const deletedIds = JSON.parse(localStorage.getItem(Storage.DELETED_IDS_KEY) || '[]');
+            if (deletedIds.length > 0) {
+                const currentInspections = Storage.getAllInspections(); // This reads from localStorage
+                const validInspections = currentInspections.filter(i => !deletedIds.includes(i.id));
+
+                if (validInspections.length < currentInspections.length) {
+                    console.warn(`👻 Ghost Buster: Removed ${currentInspections.length - validInspections.length} resurrected inspections.`);
+                    localStorage.setItem(Storage.getStorageKey(), JSON.stringify(validInspections));
+                }
+            }
+        } catch (err) {
+            console.error('Ghost Buster error:', err);
+        }
+    }, 1000);
+
 } catch (e) {
     console.error('CRITICAL: Storage initialization failed', e);
 }

@@ -428,7 +428,11 @@ const Report = {
   /**
    * Generate single room HTML for report
    */
-      < div class="room-section" >
+  generateRoomHTML(room, number) {
+    const displayName = room.name || Utils.getRoomTypeLabel(room.type);
+
+    return `
+      <div class="room-section">
   <div class="room-header">
     <div class="room-title">
       ${number}. ${displayName}
@@ -438,17 +442,15 @@ const Report = {
     </div>
   </div>
 
-        ${
-  room.description ? `
+        ${room.description ? `
           <div class="description">
             <strong>Descrição:</strong><br>
             ${room.description}
           </div>
         ` : ''
-}
+      }
 
-        ${
-  room.photos && room.photos.length > 0 ? `
+        ${room.photos && room.photos.length > 0 ? `
           <div>
             <strong>Registro Fotográfico (${room.photos.length} foto(s)):</strong>
             <div class="photos-grid">
@@ -460,7 +462,7 @@ const Report = {
             </div>
           </div>
         ` : ''
-}
+      }
       </div >
   `;
   },
@@ -470,14 +472,14 @@ const Report = {
    */
   generateHistoryHTML(metadata) {
     if (!metadata) return '';
-    
+
     const createdAt = metadata.createdAt ? new Date(metadata.createdAt).toLocaleString('pt-BR') : 'N/A';
     const history = metadata.editHistory || [];
 
     if (history.length === 0 && !metadata.completedAt) return '';
 
     let historyRows = '';
-    
+
     // Add creation
     historyRows += `
   < tr >
