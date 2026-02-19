@@ -170,11 +170,7 @@
             </div>
             <div class="wizard-step" data-step="3">
               <div class="wizard-step-circle">3</div>
-              <div class="wizard-step-label">Revisão</div>
-            </div>
-            <div class="wizard-step" data-step="4">
-              <div class="wizard-step-circle">4</div>
-              <div class="wizard-step-label">Laudo</div>
+              <div class="wizard-step-label">Laudo Final</div>
             </div>
           </div>
         </nav>
@@ -395,37 +391,17 @@
                 <button class="btn btn-secondary" id="backToPropertyBtn">
                   ← Voltar
                 </button>
-                <button class="btn btn-primary btn-lg" id="nextToReviewBtn">
-                  Próximo: Revisão →
-                </button>
-              </div>
-            </div>
-          </section>
-
-          <!-- Step 3: Revisão -->
-          <section id="step3" class="step-content hidden">
-            <div class="card">
-              <div class="card-header">
-                <h2 class="card-title">Revisão da Vistoria</h2>
-              </div>
-              <div class="card-body">
-                <div id="reviewContent">
-                  <!-- Review content will be generated dynamically -->
-                </div>
-              </div>
-              <div class="card-footer">
-                <button class="btn btn-secondary" id="backToRoomsBtn">
-                  ← Voltar
-                </button>
                 <button class="btn btn-success btn-lg" id="generateReportBtn">
-                  ✓ Gerar Laudo
+                  ✓ Gerar Laudo Final
                 </button>
               </div>
             </div>
           </section>
 
-          <!-- Step 4: Laudo Gerado -->
-          <section id="step4" class="step-content hidden">
+
+
+          <!-- Step 3: Laudo Gerado -->
+          <section id="step3" class="step-content hidden">
             <div class="card">
               <div class="card-header">
                 <h2 class="card-title">Laudo de Vistoria</h2>
@@ -435,7 +411,7 @@
                   <!-- Report preview will be shown here -->
                 </div>
               </div>
-              <button class="btn btn-secondary" id="backToReviewBtn">
+              <button class="btn btn-secondary" id="backToRoomsFromReportBtn">
                 ← Voltar
               </button>
               <button class="btn btn-success btn-lg" id="downloadPdfBtn">

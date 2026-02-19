@@ -78,15 +78,8 @@ const Wizard = {
                 console.log('Data saved, moving to step 2');
                 this.goToStep(2); // Go to rooms step
             } else if (currentStep === 2) {
-                // Temporarily disabled room validation for testing
-                // if (Rooms.getRooms().length === 0) {
-                //     Utils.showNotification('Adicione pelo menos um cômodo antes de continuar', 'warning');
-                //     return;
-                // }
-                this.goToStep(3); // Go to review
-                this.showReview();
-            } else if (currentStep === 3) {
-                this.goToStep(4); // Go to report
+                // Go directly to Report (Step 3)
+                this.goToStep(3);
                 this.generateReport();
             }
         } catch (error) {
@@ -218,12 +211,7 @@ const Wizard = {
         Storage.saveCurrentInspection();
     },
 
-    /**
-     * Show review page
-     */
-    showReview() {
-        Report.generateReview(window.AppState.propertyData, Rooms.getRooms());
-    },
+
 
     /**
      * Generate final report
@@ -300,21 +288,18 @@ document.getElementById('backToPropertyBtn').addEventListener('click', () => {
     Wizard.previousStep();
 });
 
-document.getElementById('nextToReviewBtn').addEventListener('click', () => {
-    Wizard.nextStep();
-});
-
-document.getElementById('backToRoomsBtn').addEventListener('click', () => {
-    Wizard.previousStep();
-});
-
+// "Next" button on Rooms step now generates report
 document.getElementById('generateReportBtn').addEventListener('click', () => {
     Wizard.nextStep();
 });
 
-document.getElementById('backToReviewBtn').addEventListener('click', () => {
-    Wizard.previousStep();
-});
+// "Back" button on Report step (new ID)
+const backToRoomsFromReportBtn = document.getElementById('backToRoomsFromReportBtn');
+if (backToRoomsFromReportBtn) {
+    backToRoomsFromReportBtn.addEventListener('click', () => {
+        Wizard.previousStep();
+    });
+}
 
 // PDF Download
 document.getElementById('downloadPdfBtn').addEventListener('click', async () => {
