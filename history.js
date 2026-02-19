@@ -209,8 +209,36 @@ const InspectionHistory = {
         // Check if finished and redirect to appropriate step for editing
         let targetStep = inspection.currentStep;
         if (inspection.status === 'completed' || targetStep === 4) {
-            targetStep = 3; // Redirect to Review step to allow edits
-            Utils.showNotification('Vistoria reaberta para edição', 'info');
+            targetStep = 3; // Redirect to Report step
+
+            // Log reopening if not already logged recently (optional, but good for traceability)
+            // We only log if status was completed
+            if (inspection.status === 'completed') {
+                const historyEntry = {
+                    action: 'reopened',
+                    timestamp: new Date().toISOString()
+                };
+
+                // We need to update storage directly as AppState doesn't hold history
+                const currentHistory = inspection.editHistory || [];
+                currentHistory.push(historyEntry);
+
+                // Update storage without changing status yet? 
+                // User said "reopened for edition". Usually implies status change or just tracking.
+                // Let's keep status as completed until they actually change something? 
+                // Or better: changing status to 'in-progress' forces them to 'finalize' again, 
+                // which creates a nice cycle: Created -> Finalized -> Reopened -> Finalized.
+                // This seems to be what is requested: "rastreabilidade".
+
+                Storage.updateInspection(id, {
+                    editHistory: currentHistory,
+                    status: 'in-progress' // Revert status to allow editing flow
+                });
+
+                Utils.showNotification('Vistoria reaberta para edição. O status retornou para "Em Andamento".', 'info');
+            } else {
+                Utils.showNotification('Vistoria carregada para edição', 'info');
+            }
         }
 
         // Go to appropriate step

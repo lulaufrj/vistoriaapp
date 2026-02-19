@@ -98,7 +98,8 @@ const Storage = {
             currentStep: 1,
             propertyData: {},
             rooms: [],
-            pdfGenerated: false
+            pdfGenerated: false,
+            editHistory: [] // Track history of status changes
         };
 
         // Do NOT save to storage immediately to prevent ghost records
@@ -273,11 +274,27 @@ const Storage = {
     /**
      * Mark inspection as completed
      */
+    /**
+     * Mark inspection as completed
+     */
     markAsCompleted(id) {
+        const inspection = this.getInspection(id);
+        if (!inspection) return null;
+
+        const historyEntry = {
+            action: 'finalized',
+            timestamp: new Date().toISOString(),
+            user: 'User' // Placeholder for auth context if needed
+        };
+
+        const history = inspection.editHistory || [];
+        history.push(historyEntry);
+
         return this.updateInspection(id, {
             status: 'completed',
             completedAt: new Date().toISOString(),
-            pdfGenerated: true
+            pdfGenerated: true,
+            editHistory: history
         });
     },
 
