@@ -365,13 +365,19 @@ const AudioRecorder = {
      */
     renderAudios() {
         const container = document.getElementById('roomAudios');
+        const descInput = document.getElementById('roomDescription');
+        const currentDesc = descInput ? descInput.value : '';
 
         if (this.currentAudios.length === 0) {
             container.innerHTML = '<p style="color: var(--gray-500); text-align: center; padding: 1rem;">Nenhum áudio adicionado</p>';
             return;
         }
 
-        container.innerHTML = this.currentAudios.map(audio => `
+        container.innerHTML = this.currentAudios.map(audio => {
+            const isRawInDesc = audio.transcription && currentDesc.includes(audio.transcription);
+            const isFmtInDesc = audio.formattedTranscription && currentDesc.includes(audio.formattedTranscription);
+
+            return `
       <div style="background: var(--gray-50); padding: 1rem; border-radius: var(--radius-md); margin-bottom: 0.5rem; border: 1px solid var(--gray-200);">
         
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
@@ -392,8 +398,24 @@ const AudioRecorder = {
 
         <!-- Raw Transcription -->
         <div style="margin-bottom: 0.5rem;">
-            <label style="font-size: 0.75rem; font-weight: bold; color: var(--gray-600); display: block; margin-bottom: 0.25rem;">📝 Transcrição Bruta:</label>
-            <div style="background: white; padding: 0.5rem; border-radius: var(--radius-sm); font-size: 0.85rem; color: var(--gray-700); border: 1px solid var(--gray-200); font-style: italic;">
+            <div style="display: flex; justify-content: space-between; align-items: end; margin-bottom: 0.25rem;">
+                <label style="font-size: 0.75rem; font-weight: bold; color: var(--gray-600);">📝 Transcrição Bruta:</label>
+                <div style="display: flex; gap: 5px;">
+                     <button class="btn btn-xs ${isRawInDesc ? 'btn-error' : 'btn-primary'}" 
+                        style="font-size: 0.7rem; padding: 2px 6px;"
+                        onclick="AudioRecorder.toggleTextInDescription('${Utils.escapeHtml(audio.transcription)}')"
+                        title="${isRawInDesc ? 'Remover da descrição' : 'Adicionar à descrição'}">
+                        ${isRawInDesc ? '➖ Remover' : '➕ Adicionar'}
+                    </button>
+                    <button class="btn btn-xs btn-outline" 
+                        style="font-size: 0.7rem; padding: 2px 6px;"
+                        onclick="AudioRecorder.editRawTranscription('${audio.id}')"
+                        title="Editar texto">
+                        ✏️
+                    </button>
+                </div>
+            </div>
+            <div id="raw-text-${audio.id}" style="background: white; padding: 0.5rem; border-radius: var(--radius-sm); font-size: 0.85rem; color: var(--gray-700); border: 1px solid var(--gray-200); font-style: italic;">
                 ${audio.transcription || 'Sem transcrição'}
             </div>
         </div>
@@ -401,7 +423,15 @@ const AudioRecorder = {
         <!-- Formatted Report Text -->
         ${audio.formattedTranscription ? `
         <div style="margin-top: 0.5rem;">
-            <label style="font-size: 0.75rem; font-weight: bold; color: var(--success-700); display: block; margin-bottom: 0.25rem;">✅ Texto para Laudo:</label>
+            <div style="display: flex; justify-content: space-between; align-items: end; margin-bottom: 0.25rem;">
+                <label style="font-size: 0.75rem; font-weight: bold; color: var(--success-700);">✅ Texto para Laudo:</label>
+                <button class="btn btn-xs ${isFmtInDesc ? 'btn-error' : 'btn-success'}" 
+                    style="font-size: 0.7rem; padding: 2px 6px;"
+                    onclick="AudioRecorder.toggleTextInDescription('${Utils.escapeHtml(audio.formattedTranscription)}')"
+                    title="${isFmtInDesc ? 'Remover da descrição' : 'Adicionar à descrição'}">
+                    ${isFmtInDesc ? '➖ Remover' : '➕ Adicionar'}
+                </button>
+            </div>
             <div style="background: var(--success-50); padding: 0.5rem; border-radius: var(--radius-sm); font-size: 0.9rem; color: var(--gray-900); border: 1px solid var(--success-200);">
                 ${audio.formattedTranscription}
             </div>
@@ -409,7 +439,59 @@ const AudioRecorder = {
         ` : ''}
 
       </div>
-    `).join('');
+    `;
+        }).join('');
+    },
+
+    /**
+     * Add or Remove text from description
+     */
+    toggleTextInDescription(text) {
+        if (!text) return;
+
+        // Decode HTML entities if needed (since we escaped them in the onclick)
+        const decodedText = new DOMParser().parseFromString(text, 'text/html').body.textContent;
+        const descInput = document.getElementById('roomDescription');
+
+        if (!descInput) {
+            Utils.showNotification('Campo de descrição não encontrado', 'error');
+            return;
+        }
+
+        let currentDesc = descInput.value;
+
+        if (currentDesc.includes(decodedText)) {
+            // Remove
+            descInput.value = currentDesc.replace(decodedText, '').replace(/\n\n\n/g, '\n\n').trim();
+            Utils.showNotification('Texto removido da descrição', 'info');
+        } else {
+            // Add
+            descInput.value = currentDesc ? currentDesc + '\n\n' + decodedText : decodedText;
+            Utils.showNotification('Texto adicionado à descrição', 'success');
+        }
+
+        // Trigger events
+        descInput.dispatchEvent(new Event('change'));
+        descInput.dispatchEvent(new Event('input'));
+
+        // Re-render buttons state
+        this.renderAudios();
+    },
+
+    /**
+     * Allow editing raw transcription
+     */
+    editRawTranscription(audioId) {
+        const audio = this.currentAudios.find(a => a.id === audioId);
+        if (!audio) return;
+
+        const newText = prompt("Editar Transcrição:", audio.transcription);
+        if (newText !== null && newText !== audio.transcription) {
+            audio.transcription = newText.trim();
+            this.renderAudios();
+            // Note: If this text was already formatted, the old formatted version remains based on old text. 
+            // The user might want to re-format.
+        }
     },
 
     /**
