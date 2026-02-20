@@ -481,8 +481,7 @@ const Report = {
     const displayName = room.name || Utils.getRoomTypeLabel(room.type);
 
     return `
-    return `
-      < div class="room-section" >
+      <div class="room-section">
         <div class="room-header">
           <div class="room-title">
             ${number}. ${displayName}
@@ -492,17 +491,15 @@ const Report = {
           </div>
         </div>
 
-        ${
-      room.description ? `
+        ${room.description ? `
           <div class="description">
             <strong>Descrição Detalhada:</strong><br>
             <span style="white-space: pre-wrap;">${room.description}</span>
           </div>
         ` : ''
-    }
+      }
 
-        ${
-      room.photos && room.photos.length > 0 ? `
+        ${room.photos && room.photos.length > 0 ? `
           <div style="margin-top: 15px;">
             <strong style="display: block; margin-bottom: 10px; page-break-after: avoid;">Registro Fotográfico (${room.photos.length} foto(s)):</strong>
             <div class="photos-grid">
@@ -514,8 +511,8 @@ const Report = {
             </div>
           </div>
         ` : ''
-    }
-      </div >
+      }
+      </div>
   `;
   },
 
@@ -534,26 +531,26 @@ const Report = {
 
     // Add creation
     historyRows += `
-  < tr >
+      <tr>
         <td style="padding: 8px; border-bottom: 1px solid #eee;">${createdAt}</td>
         <td style="padding: 8px; border-bottom: 1px solid #eee;">Criação da Vistoria</td>
         <td style="padding: 8px; border-bottom: 1px solid #eee;">Sistema</td>
-      </tr >
-  `;
+      </tr>
+    `;
 
     // Add history items
     history.forEach(item => {
       historyRows += `
-  < tr >
+        <tr>
           <td style="padding: 8px; border-bottom: 1px solid #eee;">${new Date(item.timestamp).toLocaleString('pt-BR')}</td>
           <td style="padding: 8px; border-bottom: 1px solid #eee;">${this.translateAction(item.action)}</td>
           <td style="padding: 8px; border-bottom: 1px solid #eee;">${item.user || 'Usuário'}</td>
-        </tr >
-  `;
+        </tr>
+      `;
     });
 
     return `
-  < div style = "margin-top: 30px; page-break-inside: avoid;" >
+      <div style="margin-top: 30px; page-break-inside: avoid;">
         <h2 style="color: #2563eb; border-bottom: 2px solid #2563eb; padding-bottom: 10px;">
           HISTÓRICO DA VISTORIA
         </h2>
@@ -569,8 +566,8 @@ const Report = {
             ${historyRows}
           </tbody>
         </table>
-      </div >
-  `;
+      </div>
+    `;
   },
 
   translateAction(action) {
