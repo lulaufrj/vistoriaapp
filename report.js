@@ -211,7 +211,8 @@ const Report = {
           }
           @media print {
             @page {
-                margin: 20mm; /* 2cm exact margin on all sides */
+                margin: 20mm 20mm 25mm 20mm; /* Top Right Bottom Left */
+                size: A4;
             }
             body { 
                 margin: 0;
@@ -223,43 +224,56 @@ const Report = {
                 width: 100%;
                 box-sizing: border-box;
             }
-            /* Reset any screen-only styles */
+            
             .room-section { 
-                break-inside: auto; /* Allow breaking between rooms if needed */
+                break-inside: avoid; /* Prevent splitting the room card */
+                page-break-inside: avoid;
                 margin-bottom: 20px;
-                padding-bottom: 20px;
-                border-bottom: 2px solid #e5e7eb;
+                padding: 16px; /* User suggested padding */
+                border: 2px solid #e5e7eb; /* Ensure visual border */
+                border-radius: 8px;
+                box-sizing: border-box;
             }
+
             .room-header {
-                break-after: avoid; /* Keep header next to content */
+                break-after: avoid;
                 break-inside: avoid;
             }
+
             .description {
-                break-inside: avoid; /* Keep description block together */
+                break-inside: avoid;
             }
             
-            /* Photos - Grid as Block for Print */
+            /* User Requested Grid Layout */
             .photos-grid {
-                display: block !important;
-                font-size: 0; /* Remove whitespace gaps */
+                display: grid !important;
+                grid-template-columns: repeat(3, 1fr) !important;
+                gap: 10px;
+                break-inside: avoid; /* Keep grid together if possible */
+                page-break-inside: avoid;
+                margin-top: 15px;
             }
+
             .photo-item {
-                break-inside: avoid; /* Protect image from splitting */
-                display: inline-block;
-                width: 32%;
-                margin-right: 1.33%; /* 3 * 32% + 2 * 1.33% ~= 98.6% */
-                margin-bottom: 15px;
-                vertical-align: top;
-                font-size: 1rem; /* Restore text size if needed */
+                break-inside: avoid;
+                page-break-inside: avoid;
+                width: 100%; /* Fill the grid cell */
+                margin: 0; /* Grid handles spacing via gap */
             }
-            .photo-item:nth-child(3n) {
-                margin-right: 0;
-            }
+
             .photo-item img {
-                max-height: 200px; /* Limit height to help fitting */
-                object-fit: cover;
                 width: 100%;
+                height: 150px; /* Fixed height for uniformity */
+                object-fit: cover;
+                border-radius: 4px;
+                border: 1px solid #e5e7eb;
                 display: block;
+            }
+            
+            /* Fix Signatures */
+            .signature-section {
+                break-inside: avoid;
+                margin-top: 40px;
             }
           }
           /* ... (rest of styles) ... */
