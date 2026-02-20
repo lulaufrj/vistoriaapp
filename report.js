@@ -210,37 +210,56 @@ const Report = {
             box-sizing: border-box;
           }
           @media print {
+            @page {
+                margin: 20mm; /* 2cm exact margin on all sides */
+            }
             body { 
-                max-width: 100%;
                 margin: 0;
-                padding: 20mm; /* Fixed margin for PDF/Print */
+                padding: 0;
                 -webkit-print-color-adjust: exact;
+                background: white;
             }
             .header, .footer, .room-section, .info-grid {
                 width: 100%;
+                box-sizing: border-box;
             }
+            /* Reset any screen-only styles */
             .room-section { 
-                page-break-inside: auto; /* Allow breaking for long rooms */
+                break-inside: auto; /* Allow breaking between rooms if needed */
                 margin-bottom: 20px;
                 padding-bottom: 20px;
                 border-bottom: 2px solid #e5e7eb;
             }
             .room-header {
-                page-break-after: avoid; /* Keep header with content */
-                page-break-inside: avoid;
+                break-after: avoid; /* Keep header next to content */
+                break-inside: avoid;
             }
             .description {
-                page-break-inside: avoid; /* Don't split description paragraph */
+                break-inside: avoid; /* Keep description block together */
             }
+            
+            /* Photos - Grid as Block for Print */
             .photos-grid {
-                page-break-inside: auto;
+                display: block !important;
+                font-size: 0; /* Remove whitespace gaps */
             }
             .photo-item {
-                page-break-inside: avoid; /* Don't split individual photos */
-                break-inside: avoid;
-                position: relative;
+                break-inside: avoid; /* Protect image from splitting */
                 display: inline-block;
+                width: 32%;
+                margin-right: 1.33%; /* 3 * 32% + 2 * 1.33% ~= 98.6% */
+                margin-bottom: 15px;
+                vertical-align: top;
+                font-size: 1rem; /* Restore text size if needed */
+            }
+            .photo-item:nth-child(3n) {
+                margin-right: 0;
+            }
+            .photo-item img {
+                max-height: 200px; /* Limit height to help fitting */
+                object-fit: cover;
                 width: 100%;
+                display: block;
             }
           }
           /* ... (rest of styles) ... */
@@ -448,24 +467,28 @@ const Report = {
     const displayName = room.name || Utils.getRoomTypeLabel(room.type);
 
     return `
-      <div class="room-section">
+    return `
+      < div class="room-section" >
         <div class="room-header">
-            <div class="room-title">
+          <div class="room-title">
             ${number}. ${displayName}
-            </div>
-            <div class="condition-badge condition-${room.condition}">
+          </div>
+          <div class="condition-badge condition-${room.condition}">
             ${Utils.getConditionLabel(room.condition)}
-            </div>
+          </div>
         </div>
 
-        ${room.description ? `
+        ${
+      room.description ? `
           <div class="description">
             <strong>Descrição Detalhada:</strong><br>
             <span style="white-space: pre-wrap;">${room.description}</span>
           </div>
-        ` : ''}
+        ` : ''
+    }
 
-        ${room.photos && room.photos.length > 0 ? `
+        ${
+      room.photos && room.photos.length > 0 ? `
           <div style="margin-top: 15px;">
             <strong style="display: block; margin-bottom: 10px; page-break-after: avoid;">Registro Fotográfico (${room.photos.length} foto(s)):</strong>
             <div class="photos-grid">
@@ -476,9 +499,10 @@ const Report = {
               `).join('')}
             </div>
           </div>
-        ` : ''}
-      </div>
-    `;
+        ` : ''
+    }
+      </div >
+  `;
   },
 
   /**
